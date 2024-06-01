@@ -45,8 +45,18 @@ dependencies:
   file_selector: ^1.0.3
   isar: ^3.1.0+1
   searchfield: ^1.0.1
+  another_flutter_splash_screen: ^1.2.0
 
 dev_dependencies:
+icons_launcher:
+  image_path: "lib/icons/app_icon.png"
+  platforms:
+    android:
+      enable: false
+    ios:
+      enable: false
+    windows:
+      enable: true
   flutter_test:
     sdk: flutter
 
@@ -69,8 +79,8 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
+  assets:
+     - lib/icons/
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
