@@ -30,7 +30,7 @@ class NavigationTextButton extends StatelessWidget {
       children: [
         Container(
           width: 100,
-          alignment: Alignment.center,
+          alignment: Alignment.centerLeft,
           child: TextButton(
               onPressed: buttonOnPressed,
               style: ButtonStyle(
