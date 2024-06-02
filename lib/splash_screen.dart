@@ -1,7 +1,7 @@
 import 'package:another_flutter_splash_screen/another_flutter_splash_screen.dart';
 import 'package:flutter/material.dart';
 
-import 'navigation_screen/navigation_holder.dart';
+import 'mainScreenWithNavigation/main_screen_with_navigation.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -15,38 +15,35 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-          child: FlutterSplashScreen.fadeIn(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF0f2027), // Dark blue
-            Color(0xFF203a43), // Medium blue
-            Color(0xFF2c5364), // Light blue
-            Color(0xFF302b63), // Dark purple
-            Color(0xFF0f2027), // Dark blue (again for smoother transition)
-          ],
-        ),
-        duration: Duration(seconds: 5),
-        onInit: () {
-          debugPrint("On Init");
-        },
-        onEnd: () {
-          debugPrint("On End");
-        },
-        childWidget: Transform.scale(
-          scale: 3,
-          child: SizedBox(
-            height: 200,
-            width: 200,
-            child: Image.asset(
-              "lib/icons/appicon.png",
+        child: FlutterSplashScreen.fadeIn(
+          // Setting the gradient for the splash screen background
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF022B35),
+              Color(0xFF030B21),
+              Color(0xFF000000),
+              Color.fromARGB(255, 38, 0, 0),
+            ],
+          ),
+          // Duration for the fade-in animation
+          duration: Duration(seconds: 2),
+          // Widget to display during the animation
+          childWidget: Transform.scale(
+            scale: 3, // Scales the child widget by a factor of 3
+            child: SizedBox(
+              height: 200,
+              width: 200,
+              child: Image.asset(
+                "lib/icons/appicon.png",
+              ),
             ),
           ),
+          // The next screen to navigate to after the animation
+          nextScreen: const MainScreenWithNavigation(),
         ),
-        onAnimationEnd: () => debugPrint("On Fade In End"),
-        nextScreen: const NavigationHolderComponent(),
-      )),
+      ),
     );
   }
 }
