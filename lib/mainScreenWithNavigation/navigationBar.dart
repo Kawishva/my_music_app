@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../models/navigation_text_button.dart';
+import 'models/navigation_text_button.dart';
 
 class NavigationBarHolder extends StatefulWidget {
   final Function(int navigationBarIndex) navigationBarIndexChangeFunction;
@@ -184,7 +184,7 @@ class _NavigationBarHolderState extends State<NavigationBarHolder> {
           ),
           // Playlists List
           Container(
-            height: 200,
+            height: 250,
             child: ListView.builder(
               scrollDirection: Axis.vertical,
               padding: EdgeInsets.symmetric(vertical: 5),

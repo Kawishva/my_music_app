@@ -2,10 +2,11 @@ import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:icons_plus/icons_plus.dart';
-import '../models/audioButtons.dart';
+import 'models/audioButtons.dart';
 
 class AudioTraySmall extends StatefulWidget {
   final Function() onAudioTrayMinimizingFuntion,
+      onAudioTrayCloseFuntion,
       onShuffleButtonPressed,
       onPlayAndPauseButtonPressed,
       onSkipBackButtonPressed,
@@ -21,7 +22,8 @@ class AudioTraySmall extends StatefulWidget {
       required this.onSkipBackButtonPressed,
       required this.onSkipForwardButtonPressed,
       required this.onVolumeButtonPressed,
-      required this.buttonIcon});
+      required this.buttonIcon,
+      required this.onAudioTrayCloseFuntion});
 
   @override
   State<AudioTraySmall> createState() => _AudioTraySmallState();
@@ -39,11 +41,21 @@ class _AudioTraySmallState extends State<AudioTraySmall> {
           height: 110,
           padding: EdgeInsets.all(0),
           decoration: BoxDecoration(
-            color: Colors.grey.withOpacity(0.1),
+            //color: Colors.grey.withOpacity(0.1),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF022B35).withOpacity(0.6),
+                Color(0xFF030B21).withOpacity(0.7),
+                Color(0xFF000000).withOpacity(0.8),
+                Color(0xFF260000).withOpacity(0.8),
+              ],
+            ),
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.lightBlueAccent.withOpacity(0.12),
+                color: Colors.lightBlueAccent.withOpacity(0.2),
                 spreadRadius: 5,
                 blurRadius: 5,
                 offset: const Offset(0, 0), // changes position of shadow
@@ -171,8 +183,7 @@ class _AudioTraySmallState extends State<AudioTraySmall> {
                                       AudioButtons(
                                         onButtonPressed:
                                             widget.onSkipForwardButtonPressed,
-                                        buttonIcon:
-                                            Bootstrap.skip_backward_fill,
+                                        buttonIcon: Bootstrap.skip_forward_fill,
                                         buttonWidth: 30,
                                         buttonHeight: 30,
                                         buttonIconSize: 18,
@@ -199,33 +210,35 @@ class _AudioTraySmallState extends State<AudioTraySmall> {
                   ),
                 ),
                 Align(
-                  alignment: Alignment.topRight,
+                  alignment: Alignment.topCenter,
                   child: Padding(
                     padding: const EdgeInsets.only(right: 2),
-                    child: SizedBox(
-                      width: 25,
-                      height: 25,
-                      child: IconButton.filled(
-                        onPressed: widget.onAudioTrayMinimizingFuntion,
-                        style: ButtonStyle(
-                          backgroundColor:
-                              WidgetStateProperty.all(Colors.transparent),
-                          overlayColor: WidgetStateProperty.all(
-                              Colors.black.withOpacity(0.5)),
-                          padding: WidgetStateProperty.all(EdgeInsets.zero),
-                          shape:
-                              WidgetStateProperty.all<RoundedRectangleBorder>(
-                            RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(6),
-                            ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(right: 2),
+                          child: AudioButtons(
+                            onButtonPressed: () =>
+                                widget.onAudioTrayMinimizingFuntion(),
+                            buttonIcon: Bootstrap.arrow_up_right_square,
+                            buttonWidth: 25,
+                            buttonHeight: 25,
+                            buttonIconSize: 13,
+                            buttonBorderRadiusSize: 6,
                           ),
                         ),
-                        icon: Icon(
-                          Bootstrap.arrow_up_right_square,
-                          size: 13,
-                          color: Colors.white,
+                        AudioButtons(
+                          onButtonPressed: () =>
+                              widget.onAudioTrayCloseFuntion(),
+                          buttonIcon: Bootstrap.x_lg,
+                          buttonWidth: 25,
+                          buttonHeight: 25,
+                          buttonIconSize: 13,
+                          buttonBorderRadiusSize: 6,
                         ),
-                      ),
+                      ],
                     ),
                   ),
                 ),

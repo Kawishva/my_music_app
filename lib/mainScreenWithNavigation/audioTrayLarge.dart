@@ -2,11 +2,12 @@ import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:icons_plus/icons_plus.dart';
-import '../models/audioButtons.dart';
+import 'models/audioButtons.dart';
 
 class AudioTrayLarge extends StatefulWidget {
   final List<String> allSongList;
   final Function() onAudioTrayMinimizingFuntion,
+      onAudioTrayCloseFuntion,
       onShuffleButtonPressed,
       onPlayAndPauseButtonPressed,
       onSkipBackButtonPressed,
@@ -25,7 +26,8 @@ class AudioTrayLarge extends StatefulWidget {
       required this.onSkipBackButtonPressed,
       required this.onSkipForwardButtonPressed,
       required this.onVolumeButtonPressed,
-      required this.onPlayListSongPressedFunction});
+      required this.onPlayListSongPressedFunction,
+      required this.onAudioTrayCloseFuntion});
 
   @override
   State<AudioTrayLarge> createState() => _AudioTrayLargeState();
@@ -37,19 +39,29 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 50, horizontal: 10),
-      child: Center(
+      padding: const EdgeInsets.symmetric(vertical: 44, horizontal: 10),
+      child: Align(
+        alignment: Alignment.centerRight,
         child: Container(
           width: 250,
           height: audioTrayPlayListIsExpanded ? 600 : 400,
           decoration: BoxDecoration(
-              color: Colors.grey.withOpacity(0.1),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF022B35).withOpacity(0.6),
+                  Color(0xFF030B21).withOpacity(0.7),
+                  Color(0xFF000000).withOpacity(0.8),
+                  Color(0xFF260000).withOpacity(0.8),
+                ],
+              ),
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.lightBlueAccent.withOpacity(0.12),
+                  color: Colors.lightBlueAccent.withOpacity(0.3),
                   spreadRadius: 5,
-                  blurRadius: 5,
+                  blurRadius: 3,
                   offset: const Offset(0, 0), // changes position of shadow
                 )
               ]),
@@ -59,17 +71,30 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
             children: [
               // Minimize button
               Align(
-                alignment: Alignment.topLeft,
+                alignment: Alignment.topCenter,
                 child: Padding(
                   padding: const EdgeInsets.all(10),
-                  child: AudioButtons(
-                    onButtonPressed: () =>
-                        widget.onAudioTrayMinimizingFuntion(),
-                    buttonIcon: Bootstrap.arrow_down_left_square,
-                    buttonWidth: 25,
-                    buttonHeight: 25,
-                    buttonIconSize: 13,
-                    buttonBorderRadiusSize: 6,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      AudioButtons(
+                        onButtonPressed: () =>
+                            widget.onAudioTrayMinimizingFuntion(),
+                        buttonIcon: Bootstrap.arrow_down_left_square,
+                        buttonWidth: 25,
+                        buttonHeight: 25,
+                        buttonIconSize: 13,
+                        buttonBorderRadiusSize: 6,
+                      ),
+                      AudioButtons(
+                        onButtonPressed: () => widget.onAudioTrayCloseFuntion(),
+                        buttonIcon: Bootstrap.x_lg,
+                        buttonWidth: 25,
+                        buttonHeight: 25,
+                        buttonIconSize: 13,
+                        buttonBorderRadiusSize: 6,
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -227,7 +252,7 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
                             left: 5, right: 5, top: 2, bottom: 2),
                         child: Container(
                           decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.05),
+                              color: Colors.white.withOpacity(0.09),
                               borderRadius: BorderRadius.circular(15)),
                           child: ListView.builder(
                               scrollDirection: Axis.vertical,
@@ -257,7 +282,7 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
                                             WidgetStateProperty.all(
                                                 Colors.white.withOpacity(0.06)),
                                         overlayColor: WidgetStateProperty.all(
-                                            Colors.white.withOpacity(0.02))),
+                                            Colors.white.withOpacity(0.05))),
                                     child: Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.start,

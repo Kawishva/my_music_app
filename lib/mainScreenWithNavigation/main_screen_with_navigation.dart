@@ -3,9 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:icons_plus/icons_plus.dart';
 import 'package:my_music_app/mainScreenWithNavigation/audioTraySmall.dart';
 import 'package:my_music_app/mainScreenWithNavigation/navigationBar.dart';
-import 'package:my_music_app/models/minimizeAndCloseButtons.dart';
-import 'package:window_manager/window_manager.dart';
+import 'package:my_music_app/mainScreenWithNavigation/search_bar.dart';
 import 'audioTrayLarge.dart';
+import 'models/audioButtons.dart';
+import 'screens/exploreScreen/mainScreenHolder.dart';
+import 'screens/playlistsScreens/playListsScreen.dart';
+import 'package:file_selector/file_selector.dart';
 
 class MainScreenWithNavigation extends StatefulWidget {
   const MainScreenWithNavigation({super.key});
@@ -17,11 +20,14 @@ class MainScreenWithNavigation extends StatefulWidget {
 class _SplashScreenState extends State<MainScreenWithNavigation> {
   // The currently selected index of the navigation bar
   int navigationBarIndex = 0;
+  bool screenIsAllSongsScreen = false;
   bool audioTrayIsMinimized = false;
   bool playButtonIsPressed = false;
+  bool songIsPLaying = false;
+  bool audioTrayersAreVisible = false;
 
   // List of all songs
-  final List<String> allSongList = [
+  List<String> allSongList = [
     "old songs",
     "reggae",
     "english",
@@ -43,7 +49,7 @@ class _SplashScreenState extends State<MainScreenWithNavigation> {
   ];
 
   // List of playlists
-  final List<String> playLists = [
+  List<String> playLists = [
     "old songs",
     "reggae",
     "english",
@@ -58,24 +64,11 @@ class _SplashScreenState extends State<MainScreenWithNavigation> {
   @override
   void initState() {
     super.initState();
-    _initializeWindow();
   }
 
   @override
   void dispose() {
     super.dispose();
-  }
-
-  // Initialize window settings
-  void _initializeWindow() async {
-    await windowManager.ensureInitialized();
-
-    WindowOptions windowOptions = WindowOptions();
-
-    await windowManager.waitUntilReadyToShow(windowOptions, () async {
-      windowManager.isMinimizable();
-      windowManager.isClosable();
-    });
   }
 
   @override
@@ -91,7 +84,7 @@ class _SplashScreenState extends State<MainScreenWithNavigation> {
                 Color(0xFF022B35),
                 Color(0xFF030B21),
                 Color(0xFF000000),
-                Color.fromARGB(255, 38, 0, 0),
+                Color(0xFF260000),
               ],
             ),
           ),
@@ -100,8 +93,8 @@ class _SplashScreenState extends State<MainScreenWithNavigation> {
               // Main content with navigation and audio tray
               Container(
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     // Navigation bar
                     NavigationBarHolder(
@@ -111,67 +104,99 @@ class _SplashScreenState extends State<MainScreenWithNavigation> {
                       playLists: playLists,
                     ),
                     Expanded(
-                      child: FadeIndexedStack(
-                        index: navigationBarIndex,
-                        alignment: AlignmentDirectional.center,
-                        duration: Duration.zero,
-                        children: const [
-                          Center(
-                            child: Text(
-                              'Settings 1',
-                              style: TextStyle(color: Colors.white),
+                      child: Container(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 25, vertical: 10),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  AudioButtons(
+                                    onButtonPressed: () =>
+                                        _onAddAudioFilesFunction(),
+                                    buttonIcon: screenIsAllSongsScreen
+                                        ? Bootstrap.plus_circle
+                                        : null,
+                                    buttonWidth: 30,
+                                    buttonHeight: 30,
+                                    buttonIconSize: 20,
+                                    buttonBorderRadiusSize: 7,
+                                  ),
+                                  SongsSearchBar(
+                                    allSongList: allSongList,
+                                    onSuggestionTapFunction: (searchValue) =>
+                                        _onSuggestionTapFunction(searchValue),
+                                  ),
+                                  AudioButtons(
+                                    onButtonPressed: () =>
+                                        _onAudioTrayCloseFuntion(),
+                                    buttonIcon: !audioTrayersAreVisible
+                                        ? Bootstrap.music_player
+                                        : null,
+                                    buttonWidth: 25,
+                                    buttonHeight: 25,
+                                    buttonIconSize: 16,
+                                    buttonBorderRadiusSize: 7,
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                          Center(
-                            child: Text(
-                              'Settings 2',
-                              style: TextStyle(color: Colors.white),
+                            Expanded(
+                              child: FadeIndexedStack(
+                                index: navigationBarIndex,
+                                alignment: AlignmentDirectional.center,
+                                duration: Duration.zero,
+                                children: [
+                                  Center(
+                                    child: MainScreenHolder(
+                                      allSongList: this.allSongList,
+                                      playLists: this.playLists,
+                                      onPlayAndPauseButtonPressed: () =>
+                                          _onPlayAndPauseButtonPressed(),
+                                    ),
+                                  ),
+                                  Center(
+                                      child: PlayListsScreens(
+                                    allSongList: allSongList,
+                                    onPlayAndPauseButtonPressed: () =>
+                                        _onPlayAndPauseButtonPressed(),
+                                  )),
+                                  Center(
+                                    child: PlayListsScreens(
+                                      allSongList: allSongList,
+                                      onPlayAndPauseButtonPressed: () =>
+                                          _onPlayAndPauseButtonPressed(),
+                                    ),
+                                  ),
+                                  Center(
+                                    child: PlayListsScreens(
+                                      allSongList: allSongList,
+                                      onPlayAndPauseButtonPressed: () =>
+                                          _onPlayAndPauseButtonPressed(),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                          Center(
-                            child: Text(
-                              'Settings 3',
-                              style: TextStyle(color: Colors.white),
-                            ),
-                          ),
-                          Center(
-                            child: Text(
-                              'Settings 4',
-                              style: TextStyle(color: Colors.white),
-                            ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
-                    // Large audio tray
-                    audioTrayIsMinimized
-                        ? AudioTrayLarge(
-                            allSongList: allSongList,
-                            buttonIcon: playButtonIsPressed
-                                ? Bootstrap.play_circle_fill
-                                : Bootstrap.pause_circle_fill,
-                            onAudioTrayMinimizingFuntion:
-                                _onAudioTrayMinimizingAndMaximizingFuntion,
-                            onShuffleButtonPressed: _onShuffleButtonPressed,
-                            onPlayAndPauseButtonPressed:
-                                _onPlayAndPauseButtonPressed,
-                            onSkipBackButtonPressed: _onSkipBackButtonPressed,
-                            onSkipForwardButtonPressed:
-                                _onSkipForwardButtonPressed,
-                            onVolumeButtonPressed: _onVolumeButtonPressed,
-                            onPlayListSongPressedFunction:
-                                _onPlayListSongPressedFunction,
-                          )
-                        : Container(),
                   ],
                 ),
               ),
               // Small audio tray
-              !audioTrayIsMinimized
+              audioTrayIsMinimized && audioTrayersAreVisible
                   ? AudioTraySmall(
-                      buttonIcon: playButtonIsPressed
-                          ? Bootstrap.play_circle_fill
-                          : Bootstrap.pause_circle_fill,
+                      buttonIcon: songIsPLaying
+                          ? Bootstrap.pause_circle_fill
+                          : Bootstrap.play_circle_fill,
                       onAudioTrayMinimizingFuntion:
                           _onAudioTrayMinimizingAndMaximizingFuntion,
                       onShuffleButtonPressed: _onShuffleButtonPressed,
@@ -179,43 +204,28 @@ class _SplashScreenState extends State<MainScreenWithNavigation> {
                       onSkipBackButtonPressed: _onSkipBackButtonPressed,
                       onSkipForwardButtonPressed: _onSkipForwardButtonPressed,
                       onVolumeButtonPressed: _onVolumeButtonPressed,
+                      onAudioTrayCloseFuntion: _onAudioTrayCloseFuntion,
                     )
                   : Container(),
-              // Minimize and close buttons
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                child: Container(
-                  decoration: BoxDecoration(color: Colors.transparent),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      MinimizeAndCloseButtons(
-                        buttonIcon: Bootstrap.dash_lg,
-                        onPressed: () async {
-                          windowManager.minimize();
-                          debugPrint("minimized pressed");
-                        },
-                        buttonBackgroundColor: Color(0xFF03233D),
-                        buttonOverlayColor: Colors.blue.withOpacity(0.5),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 5),
-                        child: MinimizeAndCloseButtons(
-                          buttonIcon: Bootstrap.x_lg,
-                          onPressed: () {
-                            windowManager.close();
-                            debugPrint("close pressed");
-                          },
-                          buttonBackgroundColor: Color(0xFF3D0303),
-                          buttonOverlayColor: Colors.red.withOpacity(0.5),
-                        ),
-                      )
-                    ],
-                  ),
-                ),
-              ),
+              // Large audio tray
+              !audioTrayIsMinimized && audioTrayersAreVisible
+                  ? AudioTrayLarge(
+                      allSongList: allSongList,
+                      buttonIcon: songIsPLaying
+                          ? Bootstrap.pause_circle_fill
+                          : Bootstrap.play_circle_fill,
+                      onAudioTrayMinimizingFuntion:
+                          _onAudioTrayMinimizingAndMaximizingFuntion,
+                      onShuffleButtonPressed: _onShuffleButtonPressed,
+                      onPlayAndPauseButtonPressed: _onPlayAndPauseButtonPressed,
+                      onSkipBackButtonPressed: _onSkipBackButtonPressed,
+                      onSkipForwardButtonPressed: _onSkipForwardButtonPressed,
+                      onVolumeButtonPressed: _onVolumeButtonPressed,
+                      onPlayListSongPressedFunction:
+                          _onPlayListSongPressedFunction,
+                      onAudioTrayCloseFuntion: _onAudioTrayCloseFuntion,
+                    )
+                  : Container(),
             ],
           ),
         ),
@@ -227,6 +237,12 @@ class _SplashScreenState extends State<MainScreenWithNavigation> {
   void _onNavigationBarIndexChangeFunction(int navigationBarIndex) {
     setState(() {
       this.navigationBarIndex = navigationBarIndex;
+      if (navigationBarIndex == 1) {
+        screenIsAllSongsScreen = true;
+      } else {
+        screenIsAllSongsScreen = false;
+      }
+      allSongList.shuffle();
     });
   }
 
@@ -251,9 +267,16 @@ class _SplashScreenState extends State<MainScreenWithNavigation> {
   // Function to handle play/pause button press
   void _onPlayAndPauseButtonPressed() {
     setState(() {
-      playButtonIsPressed = !playButtonIsPressed;
+      audioTrayersAreVisible = true;
+      songIsPLaying = !songIsPLaying;
     });
     debugPrint("play pressed");
+  }
+
+  void _onAudioTrayCloseFuntion() {
+    setState(() {
+      audioTrayersAreVisible = !audioTrayersAreVisible;
+    });
   }
 
   // Function to handle skip forward button press
@@ -269,5 +292,29 @@ class _SplashScreenState extends State<MainScreenWithNavigation> {
   // Function to handle playlist song press
   void _onPlayListSongPressedFunction() {
     debugPrint("playlist song pressed");
+  }
+
+  void _onSuggestionTapFunction(dynamic searchValue) {
+    debugPrint(searchValue.toString());
+  }
+
+  Future<void> _onAddAudioFilesFunction() async {
+    const XTypeGroup fileTypes = XTypeGroup(
+      extensions: <String>['.mp3'],
+    );
+
+    final List<XFile> selectedFilesList =
+        await openFiles(acceptedTypeGroups: <XTypeGroup>[fileTypes]);
+
+    if (selectedFilesList.isNotEmpty) {
+      setState(() {
+        for (int i = 0; i < selectedFilesList.length; i++) {}
+
+        selectedFilesList.clear();
+      });
+    } else {
+      // User canceled the picker
+      return;
+    }
   }
 }
