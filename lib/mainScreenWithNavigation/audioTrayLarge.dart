@@ -5,7 +5,7 @@ import 'package:icons_plus/icons_plus.dart';
 import 'models/audioButtons.dart';
 
 class AudioTrayLarge extends StatefulWidget {
-  final List<String> allSongList;
+  final List<int> allSongList;
   final Function() onAudioTrayMinimizingFuntion,
       onAudioTrayCloseFuntion,
       onShuffleButtonPressed,
@@ -13,7 +13,9 @@ class AudioTrayLarge extends StatefulWidget {
       onSkipBackButtonPressed,
       onSkipForwardButtonPressed,
       onVolumeButtonPressed,
-      onPlayListSongPressedFunction;
+      onPlayListSongPressedFunction,
+      onAddToFavouriteListFunction;
+  final Function(BuildContext newContext) onAddToPlayListOpenFunction;
   final IconData? buttonIcon;
 
   const AudioTrayLarge(
@@ -27,7 +29,9 @@ class AudioTrayLarge extends StatefulWidget {
       required this.onSkipForwardButtonPressed,
       required this.onVolumeButtonPressed,
       required this.onPlayListSongPressedFunction,
-      required this.onAudioTrayCloseFuntion});
+      required this.onAudioTrayCloseFuntion,
+      required this.onAddToPlayListOpenFunction,
+      required this.onAddToFavouriteListFunction});
 
   @override
   State<AudioTrayLarge> createState() => _AudioTrayLargeState();
@@ -35,6 +39,7 @@ class AudioTrayLarge extends StatefulWidget {
 
 class _AudioTrayLargeState extends State<AudioTrayLarge> {
   bool audioTrayPlayListIsExpanded = true;
+  bool isMyFavourite = false;
 
   @override
   Widget build(BuildContext context) {
@@ -123,32 +128,64 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
               ),
               // Song name
               Padding(
-                padding: const EdgeInsets.only(top: 10),
-                child: Text(
-                  "Song Name",
-                  textAlign: TextAlign.start,
-                  overflow: TextOverflow.fade,
-                  style: GoogleFonts.alatsi(
-                    color: Colors.white,
-                    letterSpacing: 1,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
-                  ),
-                ),
-              ),
-              // Artist name
-              Padding(
-                padding: const EdgeInsets.only(top: 2, bottom: 20),
-                child: Text(
-                  "Artist Name",
-                  textAlign: TextAlign.start,
-                  overflow: TextOverflow.fade,
-                  style: GoogleFonts.alatsi(
-                    color: Colors.white,
-                    letterSpacing: 1,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 10,
-                  ),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    AudioButtons(
+                      onButtonPressed: () =>
+                          widget.onAddToFavouriteListFunction(),
+                      buttonIcon: isMyFavourite
+                          ? Bootstrap.heart_fill
+                          : Bootstrap.heart,
+                      buttonWidth: 27,
+                      buttonHeight: 27,
+                      buttonIconSize: 20,
+                      buttonBorderRadiusSize: 8,
+                    ),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          "Song Name",
+                          textAlign: TextAlign.start,
+                          overflow: TextOverflow.fade,
+                          style: GoogleFonts.alatsi(
+                            color: Colors.white,
+                            letterSpacing: 1,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
+                        ),
+                        // Artist name
+                        Text(
+                          "Artist Name",
+                          textAlign: TextAlign.start,
+                          overflow: TextOverflow.fade,
+                          style: GoogleFonts.alatsi(
+                            color: Colors.white,
+                            letterSpacing: 1,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 10,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Builder(builder: (newContext) {
+                      return AudioButtons(
+                        onButtonPressed: () =>
+                            widget.onAddToPlayListOpenFunction(newContext),
+                        buttonIcon: Bootstrap.three_dots_vertical,
+                        buttonWidth: 25,
+                        buttonHeight: 25,
+                        buttonIconSize: 17,
+                        buttonBorderRadiusSize: 8,
+                      );
+                    }),
+                  ],
                 ),
               ),
               // Progress bar
@@ -212,7 +249,7 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
                       AudioButtons(
                           onButtonPressed: () =>
                               widget.onSkipForwardButtonPressed(),
-                          buttonIcon: Bootstrap.skip_backward_fill,
+                          buttonIcon: Bootstrap.skip_forward_fill,
                           buttonWidth: 30,
                           buttonHeight: 30,
                           buttonIconSize: 18,
@@ -306,7 +343,7 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
                                           padding: const EdgeInsets.symmetric(
                                               horizontal: 10),
                                           child: Text(
-                                            widget.allSongList[index],
+                                            "names",
                                             textAlign: TextAlign.start,
                                             overflow: TextOverflow.fade,
                                             style: GoogleFonts.alatsi(

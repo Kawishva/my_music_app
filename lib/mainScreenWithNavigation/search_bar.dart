@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:searchfield/searchfield.dart';
 
 class SongsSearchBar extends StatefulWidget {
-  final List<String> allSongList;
+  final List<int> allSongList;
   final TextEditingController searchTextController = TextEditingController();
   final Function(dynamic searchValue) onSuggestionTapFunction;
 
@@ -57,7 +57,7 @@ class _SongsSearchBarState extends State<SongsSearchBar> {
           },
           autovalidateMode: AutovalidateMode.onUserInteraction,
           suggestions: widget.allSongList
-              .map((songName) => SearchFieldListItem(songName))
+              .map((songName) => SearchFieldListItem(songName.toString()))
               .toList(),
           suggestionState: Suggestion.hidden,
           scrollbarDecoration: ScrollbarDecoration(

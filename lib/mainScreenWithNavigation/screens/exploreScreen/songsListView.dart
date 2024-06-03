@@ -3,13 +3,16 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:icons_plus/icons_plus.dart';
 
 class SongsListView extends StatefulWidget {
-  final List<String> allSongList;
-  final Function() onPlayAndPauseButtonPressed;
+  final List<int> allSongList;
+  final Function() onPlayAndPauseButtonPressed, onAddToFavouriteListFunction;
+  final Function(BuildContext newContext) onAddToPlayListOpenFunction;
 
   const SongsListView(
       {super.key,
       required this.allSongList,
-      required this.onPlayAndPauseButtonPressed});
+      required this.onPlayAndPauseButtonPressed,
+      required this.onAddToPlayListOpenFunction,
+      required this.onAddToFavouriteListFunction});
 
   @override
   State<SongsListView> createState() => _SongsLisViewState();
@@ -18,6 +21,7 @@ class SongsListView extends StatefulWidget {
 class _SongsLisViewState extends State<SongsListView> {
   int playButtonIsPressed = -1;
   bool songIsPlaying = false;
+  bool isMyFavourite = false;
 
   @override
   Widget build(BuildContext context) {
@@ -93,13 +97,94 @@ class _SongsLisViewState extends State<SongsListView> {
                               ),
                             ),
                           ),
+                          Align(
+                            alignment: Alignment.topCenter,
+                            child: Padding(
+                              padding: const EdgeInsets.all(2),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: IconButton(
+                                      onPressed: () =>
+                                          widget.onAddToFavouriteListFunction(),
+                                      icon: Icon(
+                                        isMyFavourite
+                                            ? Bootstrap.heart_fill
+                                            : Bootstrap.heart,
+                                        size: 17,
+                                        color: isMyFavourite
+                                            ? Color(0xFF880900)
+                                            : Colors.black,
+                                      ),
+                                      // Adjusted to use ButtonStyle with MaterialStateProperty
+                                      style: ButtonStyle(
+                                        backgroundColor:
+                                            WidgetStateProperty.all(
+                                                Colors.transparent),
+                                        overlayColor: WidgetStateProperty.all(
+                                            Colors.black.withOpacity(0.1)),
+                                        padding: WidgetStateProperty.all(
+                                            EdgeInsets.zero),
+                                        shape: WidgetStateProperty.all<
+                                            RoundedRectangleBorder>(
+                                          RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                                5), // Rounded corners.
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Builder(builder: (newContext) {
+                                    return SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: IconButton(
+                                        onPressed: () =>
+                                            widget.onAddToPlayListOpenFunction(
+                                                newContext),
+                                        icon: Icon(
+                                          Bootstrap.three_dots_vertical,
+                                          size: 17,
+                                          color: Colors.black,
+                                        ),
+                                        // Adjusted to use ButtonStyle with MaterialStateProperty
+                                        style: ButtonStyle(
+                                          backgroundColor:
+                                              WidgetStateProperty.all(
+                                                  Colors.transparent),
+                                          overlayColor: WidgetStateProperty.all(
+                                              Colors.black.withOpacity(0.1)),
+                                          padding: WidgetStateProperty.all(
+                                              EdgeInsets.zero),
+                                          shape: WidgetStateProperty.all<
+                                              RoundedRectangleBorder>(
+                                            RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                      5), // Rounded corners.
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  }),
+                                ],
+                              ),
+                            ),
+                          )
                         ],
                       ),
                     ),
                     Padding(
                       padding: const EdgeInsets.only(left: 0),
                       child: Text(
-                        widget.allSongList[index],
+                        widget.allSongList[index].toString(),
                         textAlign: TextAlign.center,
                         overflow: TextOverflow.fade,
                         style: GoogleFonts.alatsi(

@@ -4,7 +4,7 @@ import 'models/navigation_text_button.dart';
 
 class NavigationBarHolder extends StatefulWidget {
   final Function(int navigationBarIndex) navigationBarIndexChangeFunction;
-  final List<String> playLists;
+  final List<int> playLists;
 
   const NavigationBarHolder({
     super.key,
@@ -220,7 +220,7 @@ class _NavigationBarHolderState extends State<NavigationBarHolder> {
                     buttonColor: playListviewSelectedIndex == index
                         ? const Color(0xFF44C7FF)
                         : Colors.transparent,
-                    buttonName: widget.playLists[index],
+                    buttonName: widget.playLists[index].toString(),
                     buttonFontSize: 12,
                     buttonLetterSpacing: 1,
                     fontWeight: FontWeight.normal,

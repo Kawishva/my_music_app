@@ -11,6 +11,7 @@ class AudioTraySmall extends StatefulWidget {
       onPlayAndPauseButtonPressed,
       onSkipBackButtonPressed,
       onSkipForwardButtonPressed,
+      onAddToFavouriteListFunction,
       onVolumeButtonPressed;
   final IconData? buttonIcon;
 
@@ -23,13 +24,16 @@ class AudioTraySmall extends StatefulWidget {
       required this.onSkipForwardButtonPressed,
       required this.onVolumeButtonPressed,
       required this.buttonIcon,
-      required this.onAudioTrayCloseFuntion});
+      required this.onAudioTrayCloseFuntion,
+      required this.onAddToFavouriteListFunction});
 
   @override
   State<AudioTraySmall> createState() => _AudioTraySmallState();
 }
 
 class _AudioTraySmallState extends State<AudioTraySmall> {
+  bool isMyFavourite = false;
+
   @override
   Widget build(BuildContext context) {
     return Align(
@@ -97,18 +101,15 @@ class _AudioTraySmallState extends State<AudioTraySmall> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 0),
-                                  child: Text(
-                                    "Song Name",
-                                    textAlign: TextAlign.start,
-                                    overflow: TextOverflow.fade,
-                                    style: GoogleFonts.alatsi(
-                                      color: Colors.white,
-                                      letterSpacing: 1,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 11,
-                                    ),
+                                Text(
+                                  "Song Name",
+                                  textAlign: TextAlign.start,
+                                  overflow: TextOverflow.fade,
+                                  style: GoogleFonts.alatsi(
+                                    color: Colors.white,
+                                    letterSpacing: 1,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 11,
                                   ),
                                 ),
                                 Padding(
@@ -208,6 +209,22 @@ class _AudioTraySmallState extends State<AudioTraySmall> {
                       ],
                     ),
                   ),
+                ),
+                Align(
+                  alignment: AlignmentDirectional(-0.25, -0.7),
+                  child: Builder(builder: (context) {
+                    return AudioButtons(
+                      onButtonPressed: () =>
+                          widget.onAddToFavouriteListFunction(),
+                      buttonIcon: isMyFavourite
+                          ? Bootstrap.heart_fill
+                          : Bootstrap.heart,
+                      buttonWidth: 25,
+                      buttonHeight: 25,
+                      buttonIconSize: 17,
+                      buttonBorderRadiusSize: 8,
+                    );
+                  }),
                 ),
                 Align(
                   alignment: Alignment.topCenter,

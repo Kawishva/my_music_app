@@ -3,8 +3,11 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+  audioplayers_windows
+  audiotags
   file_selector_windows
   flutter_volume_controller
+  isar_flutter_libs
   screen_retriever
   window_manager
 )
