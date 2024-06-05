@@ -17,8 +17,13 @@ const AllSongsSchema = CollectionSchema(
   name: r'AllSongs',
   id: -3197410461205064049,
   properties: {
-    r'songPath': PropertySchema(
+    r'songIsPlaying': PropertySchema(
       id: 0,
+      name: r'songIsPlaying',
+      type: IsarType.bool,
+    ),
+    r'songPath': PropertySchema(
+      id: 1,
       name: r'songPath',
       type: IsarType.string,
     )
@@ -58,7 +63,8 @@ void _allSongsSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeString(offsets[0], object.songPath);
+  writer.writeBool(offsets[0], object.songIsPlaying);
+  writer.writeString(offsets[1], object.songPath);
 }
 
 AllSongs _allSongsDeserialize(
@@ -69,7 +75,8 @@ AllSongs _allSongsDeserialize(
 ) {
   final object = AllSongs();
   object.songId = id;
-  object.songPath = reader.readStringOrNull(offsets[0]);
+  object.songIsPlaying = reader.readBool(offsets[0]);
+  object.songPath = reader.readStringOrNull(offsets[1]);
   return object;
 }
 
@@ -81,6 +88,8 @@ P _allSongsDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
+      return (reader.readBool(offset)) as P;
+    case 1:
       return (reader.readStringOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -227,6 +236,16 @@ extension AllSongsQueryFilter
         includeLower: includeLower,
         upper: upper,
         includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<AllSongs, AllSongs, QAfterFilterCondition> songIsPlayingEqualTo(
+      bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'songIsPlaying',
+        value: value,
       ));
     });
   }
@@ -385,6 +404,18 @@ extension AllSongsQueryLinks
     on QueryBuilder<AllSongs, AllSongs, QFilterCondition> {}
 
 extension AllSongsQuerySortBy on QueryBuilder<AllSongs, AllSongs, QSortBy> {
+  QueryBuilder<AllSongs, AllSongs, QAfterSortBy> sortBySongIsPlaying() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'songIsPlaying', Sort.asc);
+    });
+  }
+
+  QueryBuilder<AllSongs, AllSongs, QAfterSortBy> sortBySongIsPlayingDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'songIsPlaying', Sort.desc);
+    });
+  }
+
   QueryBuilder<AllSongs, AllSongs, QAfterSortBy> sortBySongPath() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'songPath', Sort.asc);
@@ -412,6 +443,18 @@ extension AllSongsQuerySortThenBy
     });
   }
 
+  QueryBuilder<AllSongs, AllSongs, QAfterSortBy> thenBySongIsPlaying() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'songIsPlaying', Sort.asc);
+    });
+  }
+
+  QueryBuilder<AllSongs, AllSongs, QAfterSortBy> thenBySongIsPlayingDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'songIsPlaying', Sort.desc);
+    });
+  }
+
   QueryBuilder<AllSongs, AllSongs, QAfterSortBy> thenBySongPath() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'songPath', Sort.asc);
@@ -427,6 +470,12 @@ extension AllSongsQuerySortThenBy
 
 extension AllSongsQueryWhereDistinct
     on QueryBuilder<AllSongs, AllSongs, QDistinct> {
+  QueryBuilder<AllSongs, AllSongs, QDistinct> distinctBySongIsPlaying() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'songIsPlaying');
+    });
+  }
+
   QueryBuilder<AllSongs, AllSongs, QDistinct> distinctBySongPath(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -440,6 +489,12 @@ extension AllSongsQueryProperty
   QueryBuilder<AllSongs, int, QQueryOperations> songIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'songId');
+    });
+  }
+
+  QueryBuilder<AllSongs, bool, QQueryOperations> songIsPlayingProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'songIsPlaying');
     });
   }
 

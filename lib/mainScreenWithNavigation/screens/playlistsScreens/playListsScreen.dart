@@ -3,16 +3,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:icons_plus/icons_plus.dart';
 
 class PlayListsScreens extends StatefulWidget {
-  final List<int> allSongList;
-  final Function() onPlayAndPauseButtonPressed, onAddToFavouriteListFunction;
-  final Function(BuildContext newContext) onAddToPlayListOpenFunction;
-
-  const PlayListsScreens(
-      {super.key,
-      required this.allSongList,
-      required this.onPlayAndPauseButtonPressed,
-      required this.onAddToPlayListOpenFunction,
-      required this.onAddToFavouriteListFunction});
+  const PlayListsScreens({
+    super.key,
+  });
 
   @override
   State<PlayListsScreens> createState() => _PlayListsScreensState();
@@ -22,6 +15,7 @@ class _PlayListsScreensState extends State<PlayListsScreens> {
   int playButtonIsPressed = -1;
   bool songIsPlaying = false;
   bool isMyFavourite = false;
+  List<int> allSongList = [];
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +23,7 @@ class _PlayListsScreensState extends State<PlayListsScreens> {
       child: GridView.builder(
           primary: false,
           padding: EdgeInsets.all(5), // Padding around the grid
-          itemCount: widget.allSongList.length, // Number of items in the grid
+          itemCount: allSongList.length, // Number of items in the grid
           gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
             maxCrossAxisExtent: 152, // Max width of each item
             crossAxisSpacing: 0, // Spacing between columns
@@ -74,7 +68,6 @@ class _PlayListsScreensState extends State<PlayListsScreens> {
                                   playButtonIsPressed = index;
                                   songIsPlaying = !songIsPlaying;
                                 });
-                                widget.onPlayAndPauseButtonPressed();
                               },
                               icon: Icon(
                                 playButtonIsPressed == index && songIsPlaying
@@ -114,8 +107,7 @@ class _PlayListsScreensState extends State<PlayListsScreens> {
                                     width: 20,
                                     height: 20,
                                     child: IconButton(
-                                      onPressed: () =>
-                                          widget.onAddToFavouriteListFunction(),
+                                      onPressed: () {},
 
                                       icon: Icon(
                                         isMyFavourite
@@ -150,9 +142,7 @@ class _PlayListsScreensState extends State<PlayListsScreens> {
                                       width: 20,
                                       height: 20,
                                       child: IconButton(
-                                        onPressed: () =>
-                                            widget.onAddToPlayListOpenFunction(
-                                                newContext),
+                                        onPressed: () {},
                                         icon: Icon(
                                           Bootstrap.three_dots_vertical,
                                           size: 17,
@@ -189,7 +179,7 @@ class _PlayListsScreensState extends State<PlayListsScreens> {
                     Padding(
                       padding: const EdgeInsets.only(left: 0),
                       child: Text(
-                        widget.allSongList[index].toString(),
+                        allSongList[index].toString(),
                         textAlign: TextAlign.center,
                         overflow: TextOverflow.fade,
                         style: GoogleFonts.alatsi(

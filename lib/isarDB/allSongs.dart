@@ -6,4 +6,5 @@ part 'allSongs.g.dart';
 class AllSongs {
   Id songId = Isar.autoIncrement;
   late String? songPath;
+  bool songIsPlaying = false;
 }

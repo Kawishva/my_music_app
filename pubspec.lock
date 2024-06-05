@@ -611,6 +611,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.5"
+  on_popup_window_widget:
+    dependency: "direct main"
+    description:
+      name: on_popup_window_widget
+      sha256: "4f7c2c07804c133a48e9e4720061eafbe72b0a480cf9626278c6616f5ee276b4"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.13"
   package_config:
     dependency: transitive
     description:

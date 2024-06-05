@@ -2,12 +2,13 @@
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
 import 'package:my_music_app/isarDB/allPlayLists.dart';
-import 'package:my_music_app/isarDB/allSongs.dart';
 import 'package:my_music_app/isarDB/favouriteSongsList.dart';
 import 'package:my_music_app/isarDB/importedFolders.dart';
 import 'package:my_music_app/splash_screen.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:window_manager/window_manager.dart';
+
+import 'isarDB/allSongs.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

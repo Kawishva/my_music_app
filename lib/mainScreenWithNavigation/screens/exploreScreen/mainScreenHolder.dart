@@ -1,20 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-
 import 'songsListView.dart';
 
 class MainScreenHolder extends StatefulWidget {
-  final List<int> allSongList, playLists;
-  final Function() onPlayAndPauseButtonPressed, onAddToFavouriteListFunction;
-  final Function(BuildContext newContext) onAddToPlayListOpenFunction;
-
   const MainScreenHolder({
     super.key,
-    required this.allSongList,
-    required this.playLists,
-    required this.onPlayAndPauseButtonPressed,
-    required this.onAddToPlayListOpenFunction,
-    required this.onAddToFavouriteListFunction,
   });
 
   @override
@@ -22,6 +12,8 @@ class MainScreenHolder extends StatefulWidget {
 }
 
 class _MainScreenHolderState extends State<MainScreenHolder> {
+  List<String> playLists = ["23"];
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -29,7 +21,7 @@ class _MainScreenHolderState extends State<MainScreenHolder> {
       child: ListView.builder(
           scrollDirection: Axis.vertical,
           padding: EdgeInsets.only(top: 5, left: 5, bottom: 95),
-          itemCount: widget.playLists.length,
+          itemCount: playLists.length,
           itemBuilder: (context, index) {
             return Container(
               child: Column(
@@ -39,7 +31,7 @@ class _MainScreenHolderState extends State<MainScreenHolder> {
                   Padding(
                     padding: const EdgeInsets.only(left: 5),
                     child: Text(
-                      widget.playLists[index].toString().toUpperCase(),
+                      playLists[index].toString().toUpperCase(),
                       textAlign: TextAlign.center,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.alatsi(
@@ -56,7 +48,7 @@ class _MainScreenHolderState extends State<MainScreenHolder> {
                       ),
                       child: Container(
                         height: 2,
-                        width: widget.playLists[index].toDouble() * 7,
+                        width: playLists[index].length.toDouble() * 7,
                         decoration: BoxDecoration(
                             color: Color(0xFF860B02),
                             borderRadius: BorderRadius.circular(5),
@@ -72,15 +64,7 @@ class _MainScreenHolderState extends State<MainScreenHolder> {
                       )),
                   Padding(
                     padding: const EdgeInsets.only(top: 5, bottom: 20),
-                    child: SongsListView(
-                      allSongList: this.widget.allSongList,
-                      onPlayAndPauseButtonPressed: () =>
-                          this.widget.onPlayAndPauseButtonPressed(),
-                      onAddToPlayListOpenFunction: (newContext) =>
-                          this.widget.onAddToPlayListOpenFunction(newContext),
-                      onAddToFavouriteListFunction: () =>
-                          this.widget.onAddToFavouriteListFunction,
-                    ),
+                    child: SongsListView(),
                   )
                 ],
               ),

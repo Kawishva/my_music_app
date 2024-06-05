@@ -53,6 +53,7 @@ dependencies:
   isar_flutter_libs: ^3.1.0+1
   isar_generator: ^3.1.0+1
   audiotags: ^1.4.0
+  on_popup_window_widget: ^0.0.13
 
 
 dev_dependencies:

@@ -1,7 +1,6 @@
 import 'package:another_flutter_splash_screen/another_flutter_splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
-
 import 'mainScreenWithNavigation/main_screen_with_navigation.dart';
 
 class SplashScreen extends StatefulWidget {

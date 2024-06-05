@@ -5,27 +5,13 @@ import 'package:icons_plus/icons_plus.dart';
 import 'models/audioButtons.dart';
 
 class AudioTraySmall extends StatefulWidget {
-  final Function() onAudioTrayMinimizingFuntion,
-      onAudioTrayCloseFuntion,
-      onShuffleButtonPressed,
-      onPlayAndPauseButtonPressed,
-      onSkipBackButtonPressed,
-      onSkipForwardButtonPressed,
-      onAddToFavouriteListFunction,
-      onVolumeButtonPressed;
-  final IconData? buttonIcon;
+  final Function() onAudioTrayMinimizingFuntion, onAudioTrayCloseFuntion;
 
   const AudioTraySmall(
       {super.key,
       required this.onAudioTrayMinimizingFuntion,
-      required this.onShuffleButtonPressed,
-      required this.onPlayAndPauseButtonPressed,
-      required this.onSkipBackButtonPressed,
-      required this.onSkipForwardButtonPressed,
-      required this.onVolumeButtonPressed,
-      required this.buttonIcon,
       required this.onAudioTrayCloseFuntion,
-      required this.onAddToFavouriteListFunction});
+      n});
 
   @override
   State<AudioTraySmall> createState() => _AudioTraySmallState();
@@ -33,6 +19,7 @@ class AudioTraySmall extends StatefulWidget {
 
 class _AudioTraySmallState extends State<AudioTraySmall> {
   bool isMyFavourite = false;
+  bool songIsPLaying = false;
 
   @override
   Widget build(BuildContext context) {
@@ -154,8 +141,7 @@ class _AudioTraySmallState extends State<AudioTraySmall> {
                                         CrossAxisAlignment.center,
                                     children: [
                                       AudioButtons(
-                                        onButtonPressed:
-                                            widget.onShuffleButtonPressed,
+                                        onButtonPressed: () {},
                                         buttonIcon: Bootstrap.shuffle,
                                         buttonWidth: 30,
                                         buttonHeight: 30,
@@ -163,8 +149,7 @@ class _AudioTraySmallState extends State<AudioTraySmall> {
                                         buttonBorderRadiusSize: 8,
                                       ),
                                       AudioButtons(
-                                        onButtonPressed:
-                                            widget.onSkipBackButtonPressed,
+                                        onButtonPressed: () {},
                                         buttonIcon:
                                             Bootstrap.skip_backward_fill,
                                         buttonWidth: 30,
@@ -173,17 +158,17 @@ class _AudioTraySmallState extends State<AudioTraySmall> {
                                         buttonBorderRadiusSize: 8,
                                       ),
                                       AudioButtons(
-                                        onButtonPressed:
-                                            widget.onPlayAndPauseButtonPressed,
-                                        buttonIcon: widget.buttonIcon,
+                                        onButtonPressed: () {},
+                                        buttonIcon: songIsPLaying
+                                            ? Bootstrap.pause_circle_fill
+                                            : Bootstrap.play_circle_fill,
                                         buttonWidth: 40,
                                         buttonHeight: 40,
                                         buttonIconSize: 30,
                                         buttonBorderRadiusSize: 10,
                                       ),
                                       AudioButtons(
-                                        onButtonPressed:
-                                            widget.onSkipForwardButtonPressed,
+                                        onButtonPressed: () {},
                                         buttonIcon: Bootstrap.skip_forward_fill,
                                         buttonWidth: 30,
                                         buttonHeight: 30,
@@ -191,8 +176,7 @@ class _AudioTraySmallState extends State<AudioTraySmall> {
                                         buttonBorderRadiusSize: 8,
                                       ),
                                       AudioButtons(
-                                        onButtonPressed:
-                                            widget.onVolumeButtonPressed,
+                                        onButtonPressed: () {},
                                         buttonIcon: Bootstrap.volume_up,
                                         buttonWidth: 30,
                                         buttonHeight: 30,
@@ -214,8 +198,7 @@ class _AudioTraySmallState extends State<AudioTraySmall> {
                   alignment: AlignmentDirectional(-0.25, -0.7),
                   child: Builder(builder: (context) {
                     return AudioButtons(
-                      onButtonPressed: () =>
-                          widget.onAddToFavouriteListFunction(),
+                      onButtonPressed: () {},
                       buttonIcon: isMyFavourite
                           ? Bootstrap.heart_fill
                           : Bootstrap.heart,

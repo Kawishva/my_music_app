@@ -1,18 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:icons_plus/icons_plus.dart';
+import '../../models/playListsSelectionPopUpWindow.dart';
 
 class SongsListView extends StatefulWidget {
-  final List<int> allSongList;
-  final Function() onPlayAndPauseButtonPressed, onAddToFavouriteListFunction;
-  final Function(BuildContext newContext) onAddToPlayListOpenFunction;
-
-  const SongsListView(
-      {super.key,
-      required this.allSongList,
-      required this.onPlayAndPauseButtonPressed,
-      required this.onAddToPlayListOpenFunction,
-      required this.onAddToFavouriteListFunction});
+  const SongsListView({
+    super.key,
+  });
 
   @override
   State<SongsListView> createState() => _SongsLisViewState();
@@ -22,6 +16,7 @@ class _SongsLisViewState extends State<SongsListView> {
   int playButtonIsPressed = -1;
   bool songIsPlaying = false;
   bool isMyFavourite = false;
+  List<int> allSongList = [1, 2];
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +25,7 @@ class _SongsLisViewState extends State<SongsListView> {
       child: ListView.builder(
           scrollDirection: Axis.horizontal,
           padding: EdgeInsets.only(right: 265, top: 5, bottom: 5),
-          itemCount: widget.allSongList.length,
+          itemCount: allSongList.length,
           itemBuilder: (context, index) {
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 5),
@@ -70,7 +65,6 @@ class _SongsLisViewState extends State<SongsListView> {
                                   playButtonIsPressed = index;
                                   songIsPlaying = !songIsPlaying;
                                 });
-                                widget.onPlayAndPauseButtonPressed();
                               },
                               icon: Icon(
                                 playButtonIsPressed == index && songIsPlaying
@@ -110,8 +104,7 @@ class _SongsLisViewState extends State<SongsListView> {
                                     width: 20,
                                     height: 20,
                                     child: IconButton(
-                                      onPressed: () =>
-                                          widget.onAddToFavouriteListFunction(),
+                                      onPressed: () {},
                                       icon: Icon(
                                         isMyFavourite
                                             ? Bootstrap.heart_fill
@@ -146,8 +139,7 @@ class _SongsLisViewState extends State<SongsListView> {
                                       height: 20,
                                       child: IconButton(
                                         onPressed: () =>
-                                            widget.onAddToPlayListOpenFunction(
-                                                newContext),
+                                            _onCreatePopUpWindow(context),
                                         icon: Icon(
                                           Bootstrap.three_dots_vertical,
                                           size: 17,
@@ -184,7 +176,7 @@ class _SongsLisViewState extends State<SongsListView> {
                     Padding(
                       padding: const EdgeInsets.only(left: 0),
                       child: Text(
-                        widget.allSongList[index].toString(),
+                        allSongList[index].toString(),
                         textAlign: TextAlign.center,
                         overflow: TextOverflow.fade,
                         style: GoogleFonts.alatsi(
@@ -212,5 +204,11 @@ class _SongsLisViewState extends State<SongsListView> {
             );
           }),
     );
+  }
+
+  void _onCreatePopUpWindow(BuildContext newContext) {
+    debugPrint("vfdvf");
+    showDialog(
+        context: newContext, builder: (context) => PlayListPopUpWindow());
   }
 }

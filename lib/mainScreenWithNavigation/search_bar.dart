@@ -3,20 +3,19 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:searchfield/searchfield.dart';
 
 class SongsSearchBar extends StatefulWidget {
-  final List<int> allSongList;
   final TextEditingController searchTextController = TextEditingController();
-  final Function(dynamic searchValue) onSuggestionTapFunction;
 
-  SongsSearchBar(
-      {super.key,
-      required this.allSongList,
-      required this.onSuggestionTapFunction});
+  SongsSearchBar({
+    super.key,
+  });
 
   @override
   State<SongsSearchBar> createState() => _SongsSearchBarState();
 }
 
 class _SongsSearchBarState extends State<SongsSearchBar> {
+  List<int> allSongList = [];
+
   @override
   void initState() {
     super.initState();
@@ -53,10 +52,9 @@ class _SongsSearchBarState extends State<SongsSearchBar> {
           controller: widget.searchTextController,
           onSuggestionTap: (value) {
             widget.searchTextController.clear();
-            widget.onSuggestionTapFunction(value.searchKey);
           },
           autovalidateMode: AutovalidateMode.onUserInteraction,
-          suggestions: widget.allSongList
+          suggestions: allSongList
               .map((songName) => SearchFieldListItem(songName.toString()))
               .toList(),
           suggestionState: Suggestion.hidden,

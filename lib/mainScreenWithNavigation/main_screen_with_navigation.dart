@@ -1,24 +1,25 @@
 import 'dart:io';
 import 'package:fade_indexed_stack/fade_indexed_stack.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:icons_plus/icons_plus.dart';
 import 'package:isar/isar.dart';
 import 'package:my_music_app/mainScreenWithNavigation/audioTraySmall.dart';
-import 'package:my_music_app/mainScreenWithNavigation/navigationBar.dart';
+import 'package:my_music_app/mainScreenWithNavigation/navigationBar/navigationBar.dart';
 import 'package:my_music_app/mainScreenWithNavigation/search_bar.dart';
+import '../isarDB/allPlayLists.dart';
 import '../isarDB/allSongs.dart';
+import '../isarDB/favouriteSongsList.dart';
+import '../isarDB/importedFolders.dart';
 import 'audioTrayLarge.dart';
 import 'models/audioButtons.dart';
 import 'screens/exploreScreen/mainScreenHolder.dart';
 import 'screens/playlistsScreens/playListsScreen.dart';
-import 'package:popover/popover.dart';
 import 'package:file_picker/file_picker.dart';
 
 class MainScreenWithNavigation extends StatefulWidget {
   final Isar databaseInstance;
 
-  const MainScreenWithNavigation({super.key, required this.databaseInstance});
+  MainScreenWithNavigation({super.key, required this.databaseInstance});
 
   @override
   State<MainScreenWithNavigation> createState() => _SplashScreenState();
@@ -34,19 +35,23 @@ class _SplashScreenState extends State<MainScreenWithNavigation> {
   bool songIsPLaying = false;
   bool audioTrayersAreVisible = false;
   String selectedDirectory = "";
-  late List<bool> checkBoxValues;
 
   // List of all songs
   List<int> allSongsIdList = [];
 
   // List of playlists
-  List<int> playListsIdList = [];
+
+  // List of playlists
+  List<String> folderPathsList = [];
+  List<String> allPlayLists = [];
 
   @override
   void initState() {
     super.initState();
-    checkBoxValues = List<bool>.filled(playListsIdList.length, false);
+
+    _reloadFoldersFunction(widget.databaseInstance);
     _retrieveSongIds(widget.databaseInstance);
+    _resetFunction(widget.databaseInstance);
   }
 
   @override
@@ -86,7 +91,6 @@ class _SplashScreenState extends State<MainScreenWithNavigation> {
                       navigationBarIndexChangeFunction: (navigationBarIndex) =>
                           _onNavigationBarIndexChangeFunction(
                               navigationBarIndex),
-                      playLists: playListsIdList,
                     ),
                     Expanded(
                       child: Container(
@@ -114,11 +118,7 @@ class _SplashScreenState extends State<MainScreenWithNavigation> {
                                     buttonIconSize: 20,
                                     buttonBorderRadiusSize: 7,
                                   ),
-                                  SongsSearchBar(
-                                    allSongList: allSongsIdList,
-                                    onSuggestionTapFunction: (searchValue) =>
-                                        _onSuggestionTapFunction(searchValue),
-                                  ),
+                                  SongsSearchBar(),
                                   AudioButtons(
                                     onButtonPressed: () =>
                                         _onAudioTrayCloseFuntion(),
@@ -140,55 +140,14 @@ class _SplashScreenState extends State<MainScreenWithNavigation> {
                                 duration: Duration.zero,
                                 children: [
                                   Center(
-                                    child: MainScreenHolder(
-                                      allSongList: this.allSongsIdList,
-                                      playLists: this.playListsIdList,
-                                      onPlayAndPauseButtonPressed: () =>
-                                          _onPlayAndPauseButtonPressed(),
-                                      onAddToFavouriteListFunction: () =>
-                                          _onAddToFavouriteListFunction(),
-                                      onAddToPlayListOpenFunction:
-                                          (newContext) =>
-                                              _onAddToPlayListOpenFunction(
-                                                  newContext),
-                                    ),
+                                    child: MainScreenHolder(),
+                                  ),
+                                  Center(child: PlayListsScreens()),
+                                  Center(
+                                    child: PlayListsScreens(),
                                   ),
                                   Center(
-                                      child: PlayListsScreens(
-                                    allSongList: allSongsIdList,
-                                    onPlayAndPauseButtonPressed: () =>
-                                        _onPlayAndPauseButtonPressed(),
-                                    onAddToFavouriteListFunction: () =>
-                                        _onAddToFavouriteListFunction(),
-                                    onAddToPlayListOpenFunction: (newContext) =>
-                                        _onAddToPlayListOpenFunction(
-                                            newContext),
-                                  )),
-                                  Center(
-                                    child: PlayListsScreens(
-                                      allSongList: allSongsIdList,
-                                      onPlayAndPauseButtonPressed: () =>
-                                          _onPlayAndPauseButtonPressed(),
-                                      onAddToFavouriteListFunction: () =>
-                                          _onAddToFavouriteListFunction(),
-                                      onAddToPlayListOpenFunction:
-                                          (newContext) =>
-                                              _onAddToPlayListOpenFunction(
-                                                  newContext),
-                                    ),
-                                  ),
-                                  Center(
-                                    child: PlayListsScreens(
-                                      allSongList: allSongsIdList,
-                                      onPlayAndPauseButtonPressed: () =>
-                                          _onPlayAndPauseButtonPressed(),
-                                      onAddToFavouriteListFunction: () =>
-                                          _onAddToFavouriteListFunction(),
-                                      onAddToPlayListOpenFunction:
-                                          (newContext) =>
-                                              _onAddToPlayListOpenFunction(
-                                                  newContext),
-                                    ),
+                                    child: PlayListsScreens(),
                                   ),
                                 ],
                               ),
@@ -203,46 +162,17 @@ class _SplashScreenState extends State<MainScreenWithNavigation> {
               // Small audio tray
               audioTrayIsMinimized && audioTrayersAreVisible
                   ? AudioTraySmall(
-                      buttonIcon: songIsPLaying
-                          ? Bootstrap.pause_circle_fill
-                          : Bootstrap.play_circle_fill,
                       onAudioTrayMinimizingFuntion: () =>
                           _onAudioTrayMinimizingAndMaximizingFuntion(),
-                      onShuffleButtonPressed: () => _onShuffleButtonPressed(),
-                      onPlayAndPauseButtonPressed: () =>
-                          _onPlayAndPauseButtonPressed(),
-                      onSkipBackButtonPressed: () => _onSkipBackButtonPressed(),
-                      onSkipForwardButtonPressed: () =>
-                          _onSkipForwardButtonPressed(),
-                      onVolumeButtonPressed: () => _onVolumeButtonPressed(),
                       onAudioTrayCloseFuntion: () => _onAudioTrayCloseFuntion(),
-                      onAddToFavouriteListFunction: () =>
-                          _onAddToFavouriteListFunction(),
                     )
                   : Container(),
               // Large audio tray
               !audioTrayIsMinimized && audioTrayersAreVisible
                   ? AudioTrayLarge(
-                      allSongList: allSongsIdList,
-                      buttonIcon: songIsPLaying
-                          ? Bootstrap.pause_circle_fill
-                          : Bootstrap.play_circle_fill,
                       onAudioTrayMinimizingFuntion: () =>
                           _onAudioTrayMinimizingAndMaximizingFuntion(),
-                      onShuffleButtonPressed: () => _onShuffleButtonPressed(),
-                      onPlayAndPauseButtonPressed: () =>
-                          _onPlayAndPauseButtonPressed(),
-                      onSkipBackButtonPressed: () => _onSkipBackButtonPressed(),
-                      onSkipForwardButtonPressed: () =>
-                          _onSkipForwardButtonPressed(),
-                      onVolumeButtonPressed: () => _onVolumeButtonPressed(),
                       onAudioTrayCloseFuntion: () => _onAudioTrayCloseFuntion(),
-                      onPlayListSongPressedFunction: () =>
-                          _onPlayListSongPressedFunction(),
-                      onAddToFavouriteListFunction: () =>
-                          _onAddToFavouriteListFunction(),
-                      onAddToPlayListOpenFunction: (newContext) =>
-                          _onAddToPlayListOpenFunction(newContext),
                     )
                   : Container(),
             ],
@@ -254,6 +184,7 @@ class _SplashScreenState extends State<MainScreenWithNavigation> {
 
   // Function to handle navigation bar index change
   void _onNavigationBarIndexChangeFunction(int navigationBarIndex) {
+    _reloadFoldersFunction(widget.databaseInstance);
     setState(() {
       this.navigationBarIndex = navigationBarIndex;
       if (navigationBarIndex == 1) {
@@ -261,7 +192,6 @@ class _SplashScreenState extends State<MainScreenWithNavigation> {
       } else {
         screenIsAllSongsScreen = false;
       }
-      allSongsIdList.shuffle();
     });
   }
 
@@ -273,74 +203,132 @@ class _SplashScreenState extends State<MainScreenWithNavigation> {
     debugPrint(audioTrayIsMinimized.toString());
   }
 
-  // Function to handle shuffle button press
-  void _onShuffleButtonPressed() {
-    debugPrint("shuffle pressed");
-  }
-
-  // Function to handle skip back button press
-  void _onSkipBackButtonPressed() {
-    debugPrint("skip back pressed");
-  }
-
-  // Function to handle play/pause button press
-  void _onPlayAndPauseButtonPressed() {
-    setState(() {
-      audioTrayersAreVisible = true;
-      songIsPLaying = !songIsPLaying;
-    });
-    debugPrint("play pressed");
-  }
-
   void _onAudioTrayCloseFuntion() {
     setState(() {
       audioTrayersAreVisible = !audioTrayersAreVisible;
     });
   }
 
-  // Function to handle skip forward button press
-  void _onSkipForwardButtonPressed() {
-    debugPrint("skip forward pressed");
-  }
-
-  // Function to handle volume button press
-  void _onVolumeButtonPressed() {
-    debugPrint("volume pressed");
-  }
-
-  // Function to handle playlist song press
-  void _onPlayListSongPressedFunction() {
-    debugPrint("playlist song pressed");
-  }
-
-  void _onSuggestionTapFunction(dynamic searchValue) {
-    debugPrint(searchValue.toString());
-  }
-
   Future<void> _onSongsFolderPathSelectionFunction(Isar isarDBInstance) async {
     String? directoryPath = await FilePicker.platform.getDirectoryPath();
-    if (directoryPath != null) {
-      setState(() {
-        selectedDirectory = directoryPath;
-      });
-      debugPrint(selectedDirectory);
 
-      _loadAndSaveAllSongsInDB(directoryPath, isarDBInstance);
+    if (directoryPath != null) {
+      debugPrint(directoryPath);
+      final Directory dir = Directory(directoryPath);
+
+      final List<File> importedSongs = dir
+          .listSync()
+          .where((item) => item.path.endsWith('.mp3'))
+          .map((item) => File(item.path))
+          .toList();
+
+      if (importedSongs.isNotEmpty) {
+        _saveFolderPathFunction(directoryPath, isarDBInstance);
+        _saveAllSongsToDBFunction(importedSongs, isarDBInstance);
+      } else {
+        debugPrint("no song found");
+      }
     } else {
       // User canceled the picker
       return;
     }
   }
 
-  Future<void> _loadAndSaveAllSongsInDB(
+  Future<void> _saveFolderPathFunction(
       String directoryPath, Isar isarDBInstance) async {
-    final Directory dir = Directory(directoryPath);
-    final List<File> importedSongs = dir
-        .listSync()
-        .where((item) => item.path.endsWith('.mp3'))
-        .map((item) => File(item.path))
-        .toList();
+    // Create a new folder object
+    final newFolder = ImportedFolders()..importedFollderPath = directoryPath;
 
+    // Retrieve all existing folder paths
+    final folders = await isarDBInstance.importedFolders.where().findAll();
+    final retrievedfolderPaths =
+        folders.map((folder) => directoryPath).toList();
+
+    // Check if the new folder path is already in the database
+    if (!retrievedfolderPaths.contains(newFolder)) {
+      // If not, save the new folder path
+      await isarDBInstance.writeTxn(() async {
+        await isarDBInstance.importedFolders.put(newFolder);
+      });
+      final newfolders = await isarDBInstance.importedFolders.where().findAll();
+      debugPrint('Folder path saved to database: $newfolders');
+    } else {
+      debugPrint('Folder path already exists in the database: $directoryPath');
+    }
+  }
+
+  Future<void> _reloadFoldersFunction(Isar isarDBInstance) async {
+    List<File> allImportedSongsPaths = [];
+
+    setState(() {
+      folderPathsList.clear();
+      // allSongsIdList.clear();
+    });
+
+    // Retrieve folder paths from the database
+    final folders = await isarDBInstance.importedFolders.where().findAll();
+    folderPathsList =
+        folders.map((folder) => folder.importedFollderPath.toString()).toList();
+
+    final retrievedSongsPaths = await isarDBInstance.allSongs.where().findAll();
+    final allRetrievedSongsPathList =
+        retrievedSongsPaths.map((song) => song.songPath).toList();
+
+    for (int i = 0; i < folderPathsList.length; i++) {
+      final Directory dir = Directory(folderPathsList[i]);
+
+      final List<File> importedSongsPaths = dir
+          .listSync()
+          .where((item) => item.path.endsWith('.mp3'))
+          .map((item) => File(item.path))
+          .toList();
+
+      if (importedSongsPaths.isNotEmpty) {
+        allImportedSongsPaths.addAll(importedSongsPaths);
+        debugPrint("No song  directory: ${importedSongsPaths.length}");
+        _saveAllSongsToDBFunction(importedSongsPaths, isarDBInstance);
+      } else {
+        debugPrint("No song found in directory: ${folderPathsList[i]}");
+      }
+    }
+
+    for (int j = 0; j < allRetrievedSongsPathList.length; j++) {
+      if (!allImportedSongsPaths
+          .any((file) => file.path == allRetrievedSongsPathList[j])) {
+        await isarDBInstance.writeTxn(() async {
+          final success = await isarDBInstance.allSongs
+              .filter()
+              .songPathEqualTo(allRetrievedSongsPathList[j])
+              .deleteAll();
+          debugPrint('Song deleted: $success');
+        });
+      }
+    }
+
+    _retrievFolderPathsFunction(isarDBInstance);
+    _retrieveSongIds(isarDBInstance);
+    _onRetrieveAllPlayListsFunction(isarDBInstance);
+  }
+
+  Future<void> _retrievFolderPathsFunction(Isar isarDBInstance) async {
+    // Retrieve all existing folder paths
+    final folders = await isarDBInstance.importedFolders.where().findAll();
+    final retrievedfolderPaths =
+        folders.map((folder) => folder.importedFollderPath).toList();
+
+    setState(() {
+      for (var folderPaths in retrievedfolderPaths) {
+        if (!allSongsIdList.contains(folderPaths)) {
+          folderPathsList.add(folderPaths!);
+        }
+      }
+    });
+
+    debugPrint('Song IDs retrieved: $folderPathsList');
+  }
+
+  Future<void> _saveAllSongsToDBFunction(
+      List<File> importedSongs, Isar isarDBInstance) async {
     final importedSongsList =
         importedSongs.map((file) => AllSongs()..songPath = file.path).toList();
 
@@ -365,10 +353,24 @@ class _SplashScreenState extends State<MainScreenWithNavigation> {
     final allSongs = await isarDBInstance.allSongs.where().findAll();
     final allSongsIds = allSongs.map((song) => song.songId).toList();
 
+    for (int i = 0; i < allSongsIdList.length; i++) {
+      if (!allSongs.any((song) => song.songId == allSongsIdList[i])) {
+        await isarDBInstance.writeTxn(() async {
+          final success = await isarDBInstance.allSongs
+              .filter()
+              .songIdEqualTo(allSongsIdList[i])
+              .deleteAll();
+          debugPrint('Song deleted: $success');
+        });
+
+        allSongsIdList.removeAt(i);
+      }
+    }
+
     setState(() {
-      for (final id in allSongsIds) {
-        if (!allSongsIdList.contains(id)) {
-          allSongsIdList.add(id);
+      for (final songId in allSongsIds) {
+        if (!allSongsIdList.contains(songId)) {
+          allSongsIdList.add(songId);
         }
       }
     });
@@ -376,75 +378,72 @@ class _SplashScreenState extends State<MainScreenWithNavigation> {
     debugPrint('Song IDs retrieved: $allSongsIdList');
   }
 
-  void _onAddToPlayListOpenFunction(BuildContext newContext) {
-    showPopover(
-      context: newContext,
-      barrierColor: Colors.transparent,
-      backgroundColor: Colors.black.withOpacity(0.5),
-      transitionDuration: Duration.zero,
-      bodyBuilder: (context) => Column(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Expanded(
-            child: Container(
-              child: ListView.builder(
-                  scrollDirection: Axis.vertical,
-                  padding: EdgeInsets.symmetric(horizontal: 5),
-                  itemCount: playListsIdList.length,
-                  itemBuilder: (context, index) {
-                    return Container(
-                      //  decoration: BoxDecoration(color: Colors.amber),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Text(
-                            playListsIdList[index].toString(),
-                            textAlign: TextAlign.center,
-                            overflow: TextOverflow.fade,
-                            style: GoogleFonts.alatsi(
-                              letterSpacing: 0.5,
-                              color: Colors.white,
-                              fontWeight: FontWeight.normal,
-                              fontSize: 10,
-                            ),
-                          ),
-                          Transform.scale(
-                            scale: 0.8, // Scale down the checkbox
-                            child: Checkbox(
-                              value: checkBoxValues[index],
-                              tristate: true,
-                              activeColor:
-                                  Colors.white, // Active color of the checkbox
-                              overlayColor: WidgetStateProperty.all(Colors
-                                  .transparent), // Transparent overlay color
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(
-                                    5), // Rounded corners for the checkbox
-                              ),
-                              onChanged: (ticked) {
-                                setState(() {
-                                  checkBoxValues[index] = ticked ?? false;
-                                });
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }),
-            ),
-          ),
-        ],
-      ),
-      radius: 15,
-      width: 100,
-      height: 130,
-      arrowHeight: 0,
-      arrowWidth: 0,
-    );
+  Future<void> _resetFunction(Isar isarDBInstance) async {
+    final newPlaylist = AllPlayLists()
+      ..playListName = "newPlaylistName1111"
+      ..songsIdList = [];
+
+    final newSong = AllSongs()..songPath = "newSong1111";
+
+    final favouriteList = FavouriteSongsList()..songPath = "favourite1111";
+
+    await isarDBInstance.writeTxn(() async {
+      await isarDBInstance.allPlayLists.put(newPlaylist);
+      await isarDBInstance.allSongs.put(newSong);
+      await isarDBInstance.favouriteSongsLists.put(favouriteList);
+
+      final deleteSong = await isarDBInstance.allSongs
+          .filter()
+          .songPathEqualTo("newSong1111")
+          .deleteAll();
+      debugPrint('Song deleted: $deleteSong');
+
+      final deletePlaylist = await isarDBInstance.allPlayLists
+          .filter()
+          .playListNameEqualTo("newPlaylistName1111")
+          .deleteAll();
+      debugPrint('Song deleted: $deletePlaylist');
+
+      final deleteFavourite = await isarDBInstance.favouriteSongsLists
+          .filter()
+          .songPathEqualTo("favourite1111")
+          .deleteAll();
+      debugPrint('Song deleted: $deleteFavourite');
+    });
   }
 
-  void _onAddToFavouriteListFunction() {}
+  Future<void> _onRetrieveAllPlayListsFunction(Isar isarDBInstance) async {
+    final playlists = await isarDBInstance.allPlayLists.where().findAll();
+    final playListNames =
+        playlists.map((playlist) => playlist.playListName).toList();
+
+    // Remove playlists from the database if they are not in allPlayLists
+    for (int i = allPlayLists.length - 1; i >= 0; i--) {
+      if (!playlists
+          .any((playlist) => playlist.playListName == allPlayLists[i])) {
+        await isarDBInstance.writeTxn(() async {
+          final deletePlaylist = await isarDBInstance.allPlayLists
+              .filter()
+              .playListNameEqualTo(allPlayLists[i])
+              .deleteAll();
+          debugPrint('Playlist deleted: $deletePlaylist');
+        });
+
+        setState(() {
+          allPlayLists.removeAt(i);
+        });
+      }
+    }
+
+    // Add new playlists from the database to allPlayLists
+    for (final playlistName in playListNames) {
+      if (!allPlayLists.contains(playlistName)) {
+        setState(() {
+          allPlayLists.add(playlistName ?? "");
+        });
+      }
+    }
+
+    debugPrint('Playlists retrieved: $allPlayLists');
+  }
 }

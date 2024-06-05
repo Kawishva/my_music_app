@@ -5,33 +5,13 @@ import 'package:icons_plus/icons_plus.dart';
 import 'models/audioButtons.dart';
 
 class AudioTrayLarge extends StatefulWidget {
-  final List<int> allSongList;
-  final Function() onAudioTrayMinimizingFuntion,
-      onAudioTrayCloseFuntion,
-      onShuffleButtonPressed,
-      onPlayAndPauseButtonPressed,
-      onSkipBackButtonPressed,
-      onSkipForwardButtonPressed,
-      onVolumeButtonPressed,
-      onPlayListSongPressedFunction,
-      onAddToFavouriteListFunction;
-  final Function(BuildContext newContext) onAddToPlayListOpenFunction;
-  final IconData? buttonIcon;
+  final Function() onAudioTrayMinimizingFuntion, onAudioTrayCloseFuntion;
 
-  const AudioTrayLarge(
-      {super.key,
-      required this.allSongList,
-      required this.onAudioTrayMinimizingFuntion,
-      required this.buttonIcon,
-      required this.onShuffleButtonPressed,
-      required this.onPlayAndPauseButtonPressed,
-      required this.onSkipBackButtonPressed,
-      required this.onSkipForwardButtonPressed,
-      required this.onVolumeButtonPressed,
-      required this.onPlayListSongPressedFunction,
-      required this.onAudioTrayCloseFuntion,
-      required this.onAddToPlayListOpenFunction,
-      required this.onAddToFavouriteListFunction});
+  const AudioTrayLarge({
+    super.key,
+    required this.onAudioTrayMinimizingFuntion,
+    required this.onAudioTrayCloseFuntion,
+  });
 
   @override
   State<AudioTrayLarge> createState() => _AudioTrayLargeState();
@@ -40,6 +20,8 @@ class AudioTrayLarge extends StatefulWidget {
 class _AudioTrayLargeState extends State<AudioTrayLarge> {
   bool audioTrayPlayListIsExpanded = true;
   bool isMyFavourite = false;
+  bool songIsPLaying = false;
+  List<int> allSongList = [];
 
   @override
   Widget build(BuildContext context) {
@@ -135,8 +117,7 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     AudioButtons(
-                      onButtonPressed: () =>
-                          widget.onAddToFavouriteListFunction(),
+                      onButtonPressed: () {},
                       buttonIcon: isMyFavourite
                           ? Bootstrap.heart_fill
                           : Bootstrap.heart,
@@ -176,8 +157,7 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
                     ),
                     Builder(builder: (newContext) {
                       return AudioButtons(
-                        onButtonPressed: () =>
-                            widget.onAddToPlayListOpenFunction(newContext),
+                        onButtonPressed: () {},
                         buttonIcon: Bootstrap.three_dots_vertical,
                         buttonWidth: 25,
                         buttonHeight: 25,
@@ -223,39 +203,37 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       AudioButtons(
-                          onButtonPressed: () =>
-                              widget.onShuffleButtonPressed(),
+                          onButtonPressed: () {},
                           buttonIcon: Bootstrap.shuffle,
                           buttonWidth: 30,
                           buttonHeight: 30,
                           buttonIconSize: 18,
                           buttonBorderRadiusSize: 8),
                       AudioButtons(
-                          onButtonPressed: () =>
-                              widget.onSkipBackButtonPressed(),
+                          onButtonPressed: () {},
                           buttonIcon: Bootstrap.skip_backward_fill,
                           buttonWidth: 30,
                           buttonHeight: 30,
                           buttonIconSize: 18,
                           buttonBorderRadiusSize: 8),
                       AudioButtons(
-                          onButtonPressed: () =>
-                              widget.onPlayAndPauseButtonPressed(),
-                          buttonIcon: widget.buttonIcon,
+                          onButtonPressed: () {},
+                          buttonIcon: songIsPLaying
+                              ? Bootstrap.pause_circle_fill
+                              : Bootstrap.play_circle_fill,
                           buttonWidth: 40,
                           buttonHeight: 40,
                           buttonIconSize: 30,
                           buttonBorderRadiusSize: 10),
                       AudioButtons(
-                          onButtonPressed: () =>
-                              widget.onSkipForwardButtonPressed(),
+                          onButtonPressed: () {},
                           buttonIcon: Bootstrap.skip_forward_fill,
                           buttonWidth: 30,
                           buttonHeight: 30,
                           buttonIconSize: 18,
                           buttonBorderRadiusSize: 8),
                       AudioButtons(
-                          onButtonPressed: () => widget.onVolumeButtonPressed(),
+                          onButtonPressed: () {},
                           buttonIcon: Bootstrap.volume_up,
                           buttonWidth: 30,
                           buttonHeight: 30,
@@ -294,15 +272,13 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
                           child: ListView.builder(
                               scrollDirection: Axis.vertical,
                               padding: EdgeInsets.symmetric(vertical: 5),
-                              itemCount: widget.allSongList.length,
+                              itemCount: allSongList.length,
                               itemBuilder: (context, index) {
                                 return Padding(
                                   padding: const EdgeInsets.symmetric(
                                       vertical: 2, horizontal: 6),
                                   child: ElevatedButton(
-                                    onPressed: () {
-                                      widget.onPlayListSongPressedFunction();
-                                    },
+                                    onPressed: () {},
                                     style: ButtonStyle(
                                         padding: WidgetStateProperty.all(
                                             EdgeInsets.symmetric(
