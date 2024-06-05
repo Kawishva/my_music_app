@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:icons_plus/icons_plus.dart';
 
+import '../../models/playListsSelectionPopUpWindow.dart';
+
 class PlayListsScreens extends StatefulWidget {
   const PlayListsScreens({
     super.key,
@@ -142,7 +144,8 @@ class _PlayListsScreensState extends State<PlayListsScreens> {
                                       width: 20,
                                       height: 20,
                                       child: IconButton(
-                                        onPressed: () {},
+                                        onPressed: () =>
+                                            _onCreatePopUpWindow(context),
                                         icon: Icon(
                                           Bootstrap.three_dots_vertical,
                                           size: 17,
@@ -207,5 +210,11 @@ class _PlayListsScreensState extends State<PlayListsScreens> {
             );
           }),
     );
+  }
+
+  void _onCreatePopUpWindow(BuildContext newContext) {
+    debugPrint("vfdvf");
+    showDialog(
+        context: newContext, builder: (context) => PlayListPopUpWindow());
   }
 }
