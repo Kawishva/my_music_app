@@ -213,7 +213,6 @@ class _PlayListsScreensState extends State<PlayListsScreens> {
   }
 
   void _onCreatePopUpWindow(BuildContext newContext) {
-    debugPrint("vfdvf");
     showDialog(
         context: newContext, builder: (context) => PlayListPopUpWindow());
   }
