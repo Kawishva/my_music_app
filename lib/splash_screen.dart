@@ -1,12 +1,11 @@
 import 'package:another_flutter_splash_screen/another_flutter_splash_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:isar/isar.dart';
 import 'mainScreenWithNavigation/main_screen_with_navigation.dart';
 
 class SplashScreen extends StatefulWidget {
-  final Isar databaseInstance;
-
-  const SplashScreen({super.key, required this.databaseInstance});
+  const SplashScreen({
+    super.key,
+  });
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -43,9 +42,7 @@ class _SplashScreenState extends State<SplashScreen> {
             ),
           ),
           // The next screen to navigate to after the animation
-          nextScreen: MainScreenWithNavigation(
-            databaseInstance: this.widget.databaseInstance,
-          ),
+          nextScreen: MainScreenWithNavigation(),
         ),
       ),
     );

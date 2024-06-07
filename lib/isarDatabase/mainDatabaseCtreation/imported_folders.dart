@@ -1,6 +1,6 @@
 import 'package:isar/isar.dart';
 
-part 'importedFolders.g.dart';
+part 'imported_folders.g.dart';
 
 @Collection()
 class ImportedFolders {

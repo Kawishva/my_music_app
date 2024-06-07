@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'allSongs.dart';
+part of 'all_songs.dart';
 
 // **************************************************************************
 // IsarCollectionGenerator
@@ -17,13 +17,18 @@ const AllSongsSchema = CollectionSchema(
   name: r'AllSongs',
   id: -3197410461205064049,
   properties: {
-    r'songIsPlaying': PropertySchema(
+    r'songIsMyFavourite': PropertySchema(
       id: 0,
+      name: r'songIsMyFavourite',
+      type: IsarType.bool,
+    ),
+    r'songIsPlaying': PropertySchema(
+      id: 1,
       name: r'songIsPlaying',
       type: IsarType.bool,
     ),
     r'songPath': PropertySchema(
-      id: 1,
+      id: 2,
       name: r'songPath',
       type: IsarType.string,
     )
@@ -63,8 +68,9 @@ void _allSongsSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeBool(offsets[0], object.songIsPlaying);
-  writer.writeString(offsets[1], object.songPath);
+  writer.writeBool(offsets[0], object.songIsMyFavourite);
+  writer.writeBool(offsets[1], object.songIsPlaying);
+  writer.writeString(offsets[2], object.songPath);
 }
 
 AllSongs _allSongsDeserialize(
@@ -75,8 +81,9 @@ AllSongs _allSongsDeserialize(
 ) {
   final object = AllSongs();
   object.songId = id;
-  object.songIsPlaying = reader.readBool(offsets[0]);
-  object.songPath = reader.readStringOrNull(offsets[1]);
+  object.songIsMyFavourite = reader.readBool(offsets[0]);
+  object.songIsPlaying = reader.readBool(offsets[1]);
+  object.songPath = reader.readStringOrNull(offsets[2]);
   return object;
 }
 
@@ -90,6 +97,8 @@ P _allSongsDeserializeProp<P>(
     case 0:
       return (reader.readBool(offset)) as P;
     case 1:
+      return (reader.readBool(offset)) as P;
+    case 2:
       return (reader.readStringOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -236,6 +245,16 @@ extension AllSongsQueryFilter
         includeLower: includeLower,
         upper: upper,
         includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<AllSongs, AllSongs, QAfterFilterCondition>
+      songIsMyFavouriteEqualTo(bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'songIsMyFavourite',
+        value: value,
       ));
     });
   }
@@ -404,6 +423,18 @@ extension AllSongsQueryLinks
     on QueryBuilder<AllSongs, AllSongs, QFilterCondition> {}
 
 extension AllSongsQuerySortBy on QueryBuilder<AllSongs, AllSongs, QSortBy> {
+  QueryBuilder<AllSongs, AllSongs, QAfterSortBy> sortBySongIsMyFavourite() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'songIsMyFavourite', Sort.asc);
+    });
+  }
+
+  QueryBuilder<AllSongs, AllSongs, QAfterSortBy> sortBySongIsMyFavouriteDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'songIsMyFavourite', Sort.desc);
+    });
+  }
+
   QueryBuilder<AllSongs, AllSongs, QAfterSortBy> sortBySongIsPlaying() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'songIsPlaying', Sort.asc);
@@ -443,6 +474,18 @@ extension AllSongsQuerySortThenBy
     });
   }
 
+  QueryBuilder<AllSongs, AllSongs, QAfterSortBy> thenBySongIsMyFavourite() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'songIsMyFavourite', Sort.asc);
+    });
+  }
+
+  QueryBuilder<AllSongs, AllSongs, QAfterSortBy> thenBySongIsMyFavouriteDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'songIsMyFavourite', Sort.desc);
+    });
+  }
+
   QueryBuilder<AllSongs, AllSongs, QAfterSortBy> thenBySongIsPlaying() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'songIsPlaying', Sort.asc);
@@ -470,6 +513,12 @@ extension AllSongsQuerySortThenBy
 
 extension AllSongsQueryWhereDistinct
     on QueryBuilder<AllSongs, AllSongs, QDistinct> {
+  QueryBuilder<AllSongs, AllSongs, QDistinct> distinctBySongIsMyFavourite() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'songIsMyFavourite');
+    });
+  }
+
   QueryBuilder<AllSongs, AllSongs, QDistinct> distinctBySongIsPlaying() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'songIsPlaying');
@@ -489,6 +538,12 @@ extension AllSongsQueryProperty
   QueryBuilder<AllSongs, int, QQueryOperations> songIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'songId');
+    });
+  }
+
+  QueryBuilder<AllSongs, bool, QQueryOperations> songIsMyFavouriteProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'songIsMyFavourite');
     });
   }
 

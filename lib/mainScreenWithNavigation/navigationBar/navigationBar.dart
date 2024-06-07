@@ -2,16 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:icons_plus/icons_plus.dart';
 import 'package:my_music_app/mainScreenWithNavigation/navigationBar/popUpWindow.dart';
+import 'package:provider/provider.dart';
+import '../../generalFunctions/navigationBarChange.dart';
+import '../../isarDatabase/databaseHelper/isarDatabaseHelper.dart';
+import '../../isarDatabase/databaseHelper/playlist.dart';
 import '../models/audioButtons.dart';
 import '../models/navigation_text_button.dart';
 
 class NavigationBarHolder extends StatefulWidget {
   final TextEditingController newPlaylistName = TextEditingController();
-  final Function(int navigationBarIndex) navigationBarIndexChangeFunction;
 
   NavigationBarHolder({
     super.key,
-    required this.navigationBarIndexChangeFunction,
   });
 
   @override
@@ -21,16 +23,26 @@ class NavigationBarHolder extends StatefulWidget {
 class _NavigationBarHolderState extends State<NavigationBarHolder> {
   int navigationBarIndex = 0;
   int playListviewSelectedIndex = -1;
-  List<String> allPlayList = [];
 
   @override
   void initState() {
     widget.newPlaylistName.clear();
+    readPlaylist();
     super.initState();
+  }
+
+  void readPlaylist() {
+    context.read<DataBaseHelper>().fetchAllPlayListsDataFromDataBase();
   }
 
   @override
   Widget build(BuildContext context) {
+    final dataBaseHelperContext = Provider.of<DataBaseHelper>(context);
+    final navigationBarChangeInstance =
+        Provider.of<NavigationBarChange>(context);
+    List<PlayListData> playListDataList =
+        dataBaseHelperContext.playListDataList;
+
     return Container(
         width: 180,
         decoration: BoxDecoration(
@@ -66,7 +78,7 @@ class _NavigationBarHolderState extends State<NavigationBarHolder> {
               // Explore Button
               NavigationTextButton(
                 buttonBoxShadow: [
-                  navigationBarIndex == 0
+                  navigationBarChangeInstance.navigationIndex == 0
                       ? const BoxShadow(
                           color: Color(0xFF44C7FF),
                           spreadRadius: 3,
@@ -80,14 +92,8 @@ class _NavigationBarHolderState extends State<NavigationBarHolder> {
                           offset: Offset(0, 0), // changes position of shadow
                         ),
                 ],
-                buttonOnPressed: () {
-                  setState(() {
-                    navigationBarIndex = 0;
-                    playListviewSelectedIndex = -1;
-                  });
-                  widget.navigationBarIndexChangeFunction(0);
-                },
-                buttonColor: navigationBarIndex == 0
+                buttonOnPressed: () => _navigationBarIndexChangeFunction(0, -1),
+                buttonColor: navigationBarChangeInstance.navigationIndex == 0
                     ? const Color(0xFF44C7FF)
                     : Colors.transparent,
                 buttonName: "EXPLORE",
@@ -127,14 +133,9 @@ class _NavigationBarHolderState extends State<NavigationBarHolder> {
                             offset: Offset(0, 0), // changes position of shadow
                           ),
                   ],
-                  buttonOnPressed: () {
-                    setState(() {
-                      navigationBarIndex = 1;
-                      playListviewSelectedIndex = -1;
-                    });
-                    widget.navigationBarIndexChangeFunction(1);
-                  },
-                  buttonColor: navigationBarIndex == 1
+                  buttonOnPressed: () =>
+                      _navigationBarIndexChangeFunction(1, -1),
+                  buttonColor: navigationBarChangeInstance.navigationIndex == 1
                       ? const Color(0xFF44C7FF)
                       : Colors.transparent,
                   buttonName: "All songs",
@@ -162,14 +163,9 @@ class _NavigationBarHolderState extends State<NavigationBarHolder> {
                             offset: Offset(0, 0), // changes position of shadow
                           ),
                   ],
-                  buttonOnPressed: () {
-                    setState(() {
-                      navigationBarIndex = 2;
-                      playListviewSelectedIndex = -1;
-                    });
-                    widget.navigationBarIndexChangeFunction(2);
-                  },
-                  buttonColor: navigationBarIndex == 2
+                  buttonOnPressed: () =>
+                      _navigationBarIndexChangeFunction(2, -1),
+                  buttonColor: navigationBarChangeInstance.navigationIndex == 2
                       ? const Color(0xFF44C7FF)
                       : Colors.transparent,
                   buttonName: "Favourites",
@@ -213,7 +209,7 @@ class _NavigationBarHolderState extends State<NavigationBarHolder> {
                 child: ListView.builder(
                   scrollDirection: Axis.vertical,
                   padding: EdgeInsets.symmetric(vertical: 5),
-                  itemCount: allPlayList.length,
+                  itemCount: playListDataList.length,
                   itemBuilder: (context, index) {
                     return Padding(
                       padding: const EdgeInsets.only(left: 5),
@@ -235,17 +231,15 @@ class _NavigationBarHolderState extends State<NavigationBarHolder> {
                                       0, 0), // changes position of shadow
                                 ),
                         ],
-                        buttonOnPressed: () {
-                          setState(() {
-                            navigationBarIndex = 3;
-                            playListviewSelectedIndex = index;
-                          });
-                          widget.navigationBarIndexChangeFunction(3);
-                        },
-                        buttonColor: playListviewSelectedIndex == index
-                            ? const Color(0xFF44C7FF)
-                            : Colors.transparent,
-                        buttonName: allPlayList[index],
+                        buttonOnPressed: () =>
+                            _navigationBarIndexChangeFunction(3, index),
+                        buttonColor:
+                            navigationBarChangeInstance.playListviewIndex ==
+                                    index
+                                ? const Color(0xFF44C7FF)
+                                : Colors.transparent,
+                        buttonName:
+                            playListDataList.elementAt(index).playListName,
                         buttonFontSize: 12,
                         buttonLetterSpacing: 1,
                         fontWeight: FontWeight.normal,
@@ -257,6 +251,12 @@ class _NavigationBarHolderState extends State<NavigationBarHolder> {
             ]));
   }
 
+  void _navigationBarIndexChangeFunction(
+      int navigationBarIndex, int playListviewSelectedIndex) {
+    context.read<NavigationBarChange>().navigationBarIndexChangeFunction(
+        navigationBarIndex, playListviewSelectedIndex);
+  }
+
   void _onCreatePopUpWindow(BuildContext newContext) {
 // Display the pop-up window
     showDialog(
@@ -264,11 +264,14 @@ class _NavigationBarHolderState extends State<NavigationBarHolder> {
       builder: (context) => PopUpWindowHolder(
         onPressedCreateButton: () {
           Navigator.pop(context);
-          this.widget.newPlaylistName.clear();
+          context
+              .read<DataBaseHelper>()
+              .saveNewPlayListToDataBase(widget.newPlaylistName.text);
+          widget.newPlaylistName.clear();
         },
         onPressedCloseButton: () {
           Navigator.pop(context);
-          this.widget.newPlaylistName.clear();
+          widget.newPlaylistName.clear();
         },
         newPlaylistNameController: this.widget.newPlaylistName,
         hintText: "New PLayList",
@@ -276,17 +279,4 @@ class _NavigationBarHolderState extends State<NavigationBarHolder> {
       ),
     );
   }
-
-/* Future<void> _onNewPlayListAddToDbFunction(
-      Isar isarDBInstance, String newPlaylistName) async {
-    final newPlaylist = AllPlayLists()
-      ..playListName = newPlaylistName
-      ..songsIdList = [];
-
-    await isarDBInstance.writeTxn(() async {
-      await isarDBInstance.allPlayLists.put(newPlaylist);
-    });
-
-    debugPrint('Playlist name saved to database: $newPlaylist');
-  }*/
 }

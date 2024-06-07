@@ -1,9 +1,9 @@
 import 'package:isar/isar.dart';
 
-part 'allPlayLists.g.dart';
+part 'play_lists.g.dart';
 
 @Collection()
-class AllPlayLists {
+class PlayLists {
   Id playListId = Isar.autoIncrement;
   late String? playListName;
   late List<int> songsIdList;

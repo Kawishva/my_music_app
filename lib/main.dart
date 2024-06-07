@@ -1,25 +1,14 @@
-// ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
-import 'package:isar/isar.dart';
-import 'package:my_music_app/isarDB/allPlayLists.dart';
-import 'package:my_music_app/isarDB/favouriteSongsList.dart';
-import 'package:my_music_app/isarDB/importedFolders.dart';
+import 'package:my_music_app/isarDatabase/databaseHelper/isarDatabaseHelper.dart';
 import 'package:my_music_app/splash_screen.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
-
-import 'isarDB/allSongs.dart';
+import 'generalFunctions/navigationBarChange.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final dir = await getApplicationSupportDirectory();
-  final isarDB = await Isar.open([
-    AllPlayListsSchema,
-    AllSongsSchema,
-    FavouriteSongsListSchema,
-    ImportedFoldersSchema
-  ], directory: dir.path, inspector: true);
+  await DataBaseHelper.databaseInitialize();
 
   await windowManager.ensureInitialized();
 
@@ -38,13 +27,21 @@ Future<void> main() async {
     await windowManager.center();
   });
 
-  runApp(MyApp(databaseInstance: isarDB));
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => DataBaseHelper()),
+        ChangeNotifierProvider(create: (context) => NavigationBarChange()),
+      ],
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
-  final Isar databaseInstance;
-
-  const MyApp({super.key, required this.databaseInstance});
+  const MyApp({
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -68,7 +65,7 @@ class MyApp extends StatelessWidget {
         shadowColor: Colors.transparent,
         bottomAppBarTheme: BottomAppBarTheme(color: Colors.transparent),
       ),
-      home: SplashScreen(databaseInstance: this.databaseInstance),
+      home: SplashScreen(),
     );
   }
 }

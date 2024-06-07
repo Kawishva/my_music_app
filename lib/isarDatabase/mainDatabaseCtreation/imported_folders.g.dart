@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'importedFolders.dart';
+part of 'imported_folders.dart';
 
 // **************************************************************************
 // IsarCollectionGenerator

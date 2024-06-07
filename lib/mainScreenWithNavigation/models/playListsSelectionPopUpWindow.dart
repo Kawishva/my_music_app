@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:on_popup_window_widget/on_popup_window_widget.dart';
+import 'package:provider/provider.dart';
+import '../../isarDatabase/databaseHelper/isarDatabaseHelper.dart';
+import '../../isarDatabase/databaseHelper/playlist.dart';
 
 class PlayListPopUpWindow extends StatefulWidget {
   const PlayListPopUpWindow({
@@ -12,11 +15,15 @@ class PlayListPopUpWindow extends StatefulWidget {
 }
 
 class _PlayListPopUpWindowState extends State<PlayListPopUpWindow> {
-  List<String> playListsIdList = ["one", "two"];
-  List<bool> checkBoxValues = [true, false];
-
   @override
   Widget build(BuildContext context) {
+    final dataBaseHelperContext = Provider.of<DataBaseHelper>(context);
+    List<PlayListData> playListDataList =
+        dataBaseHelperContext.playListDataList;
+
+    List<bool> select =
+        List.generate(playListDataList.length, (index) => false);
+
     return OnPopupWindowWidget(
         duration: Duration.zero,
         backgroundColor: Colors.transparent,
@@ -54,7 +61,7 @@ class _PlayListPopUpWindowState extends State<PlayListPopUpWindow> {
             child: ListView.builder(
                 scrollDirection: Axis.vertical,
                 padding: EdgeInsets.symmetric(horizontal: 5),
-                itemCount: playListsIdList.length,
+                itemCount: playListDataList.length,
                 itemBuilder: (context, index) {
                   return Container(
                     //  decoration: BoxDecoration(color: Colors.amber),
@@ -63,7 +70,7 @@ class _PlayListPopUpWindowState extends State<PlayListPopUpWindow> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text(
-                          playListsIdList[index],
+                          playListDataList[index].playListName,
                           textAlign: TextAlign.center,
                           overflow: TextOverflow.fade,
                           style: GoogleFonts.alatsi(
@@ -76,7 +83,7 @@ class _PlayListPopUpWindowState extends State<PlayListPopUpWindow> {
                         Transform.scale(
                           scale: 0.8, // Scale down the checkbox
                           child: Checkbox(
-                            value: checkBoxValues[index],
+                            value: select[index],
                             tristate: true,
                             activeColor:
                                 Colors.white, // Active color of the checkbox
@@ -88,7 +95,7 @@ class _PlayListPopUpWindowState extends State<PlayListPopUpWindow> {
                             ),
                             onChanged: (ticked) {
                               setState(() {
-                                checkBoxValues[index] = ticked ?? false;
+                                select[index] = ticked ?? false;
                               });
                             },
                           ),
