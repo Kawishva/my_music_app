@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
@@ -12,6 +13,7 @@ import 'song.dart';
 class DataBaseHelper extends ChangeNotifier {
   static late Isar isarDBInstance;
 
+  /// Initializes the database and sets all songs to not playing.
   static Future<void> databaseInitialize() async {
     final dir = await getApplicationSupportDirectory();
     isarDBInstance = await Isar.open([
@@ -20,18 +22,20 @@ class DataBaseHelper extends ChangeNotifier {
       RecentSongsSchema,
       ImportedFoldersSchema
     ], directory: dir.path, inspector: true);
+
+    await setAllSongsToNotPlaying();
   }
 
   final List<SongData> songDataList = [];
   final List<SongData> favouriteSongDataList = [];
   final List<PlayListData> playListDataList = [];
   final List<String> folderDirectoryPathList = [];
-
   final List<int> recentSongsIdList = [];
 
+  /// Handles the folder path selection and imports songs if available.
   Future<void> onFolderPathPick(String? directoryPath) async {
     if (directoryPath != null) {
-      debugPrint("selected folder Path : $directoryPath");
+      debugPrint("Selected folder Path: $directoryPath");
       final Directory dir = Directory(directoryPath);
 
       final List<File> importedSongsPathList = dir
@@ -44,7 +48,7 @@ class DataBaseHelper extends ChangeNotifier {
         await saveFolderPathToDataBase(directoryPath);
         await saveAllImportedSongPathsToDataBase(importedSongsPathList);
       } else {
-        debugPrint("no song found");
+        debugPrint("No song found");
       }
     } else {
       // User canceled the picker
@@ -52,29 +56,28 @@ class DataBaseHelper extends ChangeNotifier {
     }
   }
 
+  /// Saves a folder path to the database if it doesn't already exist.
   Future<void> saveFolderPathToDataBase(String directoryPath) async {
-    // Create a new folder object
     final newFolderPath = ImportedFolders()
       ..importedFollderPath = directoryPath;
 
-    // Retrieve all existing folder paths
     final folderPathsFromDataBase =
         await isarDBInstance.importedFolders.where().findAll();
 
-    // Check if the new folder path is already in the database
-    if (!folderPathsFromDataBase.contains(newFolderPath)) {
-      // If not, save the new folder path
+    final exists = folderPathsFromDataBase.any((folder) =>
+        folder.importedFollderPath == newFolderPath.importedFollderPath);
+
+    if (!exists) {
       await isarDBInstance.writeTxn(() async {
         await isarDBInstance.importedFolders.put(newFolderPath);
       });
-      fetchFolderPathsFromDataBase();
     } else {
       debugPrint('Folder path already exists in the database: $directoryPath');
     }
   }
 
+  /// Fetches all folder paths from the database.
   Future<void> fetchFolderPathsFromDataBase() async {
-    // Retrieve all existing folder paths
     final folderPathsDataFromDataBase =
         await isarDBInstance.importedFolders.where().findAll();
 
@@ -86,9 +89,10 @@ class DataBaseHelper extends ChangeNotifier {
       }
     }
     notifyListeners();
-    debugPrint('Song IDs retrieved: $folderDirectoryPathList');
+    debugPrint('Folder paths retrieved: $folderDirectoryPathList');
   }
 
+  /// Saves all imported song paths to the database if they don't already exist.
   Future<void> saveAllImportedSongPathsToDataBase(
       List<File> importedSongsPathList) async {
     final importedSongsPaths = importedSongsPathList
@@ -98,16 +102,22 @@ class DataBaseHelper extends ChangeNotifier {
     final songsPathsFromDataBase =
         await isarDBInstance.allSongs.where().findAll();
 
-    for (var newSongPath in importedSongsPaths) {
-      if (!songsPathsFromDataBase.contains(newSongPath.songPath)) {
+    for (var importedSong in importedSongsPaths) {
+      final exists = songsPathsFromDataBase.any(
+        (songDataFromDB) => songDataFromDB.songPath == importedSong.songPath,
+      );
+
+      if (!exists) {
         await isarDBInstance.writeTxn(() async {
-          await isarDBInstance.allSongs.put(newSongPath);
+          await isarDBInstance.allSongs.put(importedSong);
         });
       }
     }
+
     await fetchSongDataFromDataBase();
   }
 
+  /// Fetches all song data from the database and updates the local list.
   Future<void> fetchSongDataFromDataBase() async {
     final songDataListFromDataBase =
         await isarDBInstance.allSongs.where().findAll();
@@ -136,10 +146,12 @@ class DataBaseHelper extends ChangeNotifier {
             songDatafromDB.songIsMyFavourite));
       }
     }
+
     notifyListeners();
-    debugPrint('Song IDs retrieved: ${songDataList.first}');
+    debugPrint('Songs retrieved: ${songDataList.first}');
   }
 
+  /// Saves a new playlist to the database.
   Future<void> saveNewPlayListToDataBase(String newPLayListName) async {
     final newPlaylist = PlayLists()
       ..playListName = newPLayListName
@@ -150,9 +162,10 @@ class DataBaseHelper extends ChangeNotifier {
     });
     await fetchAllPlayListsDataFromDataBase();
 
-    debugPrint('Playlist name saved to database: $newPlaylist');
+    debugPrint('Playlist saved to database: $newPlaylist');
   }
 
+  /// Fetches all playlists from the database.
   Future<void> fetchAllPlayListsDataFromDataBase() async {
     final playListDataListFromDataBase =
         await isarDBInstance.playLists.where().findAll();
@@ -169,41 +182,108 @@ class DataBaseHelper extends ChangeNotifier {
     debugPrint('Playlists retrieved: $playListDataList');
   }
 
+  /// Adds or removes a song from the favourites list in the database.
   Future<void> addOrRemoveSongFromFavourite(int songId) async {
     await isarDBInstance.writeTxn(() async {
-      // Retrieve the song by ID
       final songToUpdate = await isarDBInstance.allSongs.get(songId);
 
       if (songToUpdate != null) {
         final bool isMyFavourite = songToUpdate.songIsMyFavourite;
-        // Update the songIsMyFavourite field
         songToUpdate.songIsMyFavourite = !isMyFavourite;
-        await isarDBInstance.allSongs.put(songToUpdate); // Save the changes
+        songDataList[songId - 1].songIsMyFavourite = !isMyFavourite;
+        await isarDBInstance.allSongs.put(songToUpdate);
       }
     });
+
+    await fetchFavouriteSongsFromSongData();
     notifyListeners();
   }
 
+  /// Fetches all favourite songs from the database.
+  Future<void> fetchFavouriteSongsFromSongData() async {
+    final favouriteSongsListFromDataBase = await isarDBInstance.allSongs
+        .filter()
+        .songIsMyFavouriteEqualTo(true)
+        .findAll();
+
+    final songsToRemove = [];
+    for (var favouriteSongData in favouriteSongDataList) {
+      if (!favouriteSongsListFromDataBase.any((favouriteSongDatafromDB) =>
+          favouriteSongDatafromDB.songId == favouriteSongData.songId)) {
+        songsToRemove.add(favouriteSongData);
+      }
+    }
+
+    for (var songData in songsToRemove) {
+      favouriteSongDataList.remove(songData);
+    }
+
+    for (var favouriteSongDatafromDB in favouriteSongsListFromDataBase) {
+      if (!favouriteSongDataList
+          .any((song) => song.songId == favouriteSongDatafromDB.songId)) {
+        favouriteSongDataList.add(SongData(
+            favouriteSongDatafromDB.songId,
+            favouriteSongDatafromDB.songPath.toString(),
+            favouriteSongDatafromDB.songIsPlaying,
+            favouriteSongDatafromDB.songIsMyFavourite));
+      }
+    }
+    await fetchSongDataFromDataBase();
+    notifyListeners();
+    debugPrint('Favourite list: ${favouriteSongDataList.length}');
+  }
+
+  /// Toggles the play/pause state of a song and updates the database accordingly.
   Future<void> songPalyAndPause(int songId) async {
+    final songDataListFromDataBase =
+        await isarDBInstance.allSongs.where().findAll();
+
     await isarDBInstance.writeTxn(() async {
-      // Retrieve the song by ID
+      for (var songDatafromDB in songDataListFromDataBase) {
+        if (songDatafromDB.songId != songId) {
+          songDatafromDB.songIsPlaying = false;
+          await isarDBInstance.allSongs.put(songDatafromDB);
+        }
+      }
+    });
+
+    await isarDBInstance.writeTxn(() async {
       final songToUpdate = await isarDBInstance.allSongs.get(songId);
 
       if (songToUpdate != null) {
         final bool isPlaying = songToUpdate.songIsPlaying;
-        // Update the songIsMyFavourite field
         songToUpdate.songIsPlaying = !isPlaying;
-        await isarDBInstance.allSongs.put(songToUpdate); // Save the changes
+
+        if (favouriteSongDataList.contains(songId - 1)) {
+          favouriteSongDataList.forEach((song) {
+            song.songIsPlaying = false;
+          });
+          favouriteSongDataList[songId - 1].songIsPlaying = true;
+        }
+        songDataList.forEach((song) {
+          song.songIsPlaying = false;
+        });
+
+        songDataList[songId - 1].songIsPlaying = !isPlaying;
+        await isarDBInstance.allSongs.put(songToUpdate);
       }
     });
+
     notifyListeners();
   }
 
-  Stream<AllSongs?> watchSong(int songId) {
-    return isarDBInstance.allSongs.watchObject(songId, fireImmediately: true);
-  }
+  /// Dummy method placeholder for future use.
+  Future<void> getSongIsPlayingValueFromDataBase() async {}
 
-  Stream<void> watchOnAllSongs() {
-    return isarDBInstance.allSongs.watchLazy();
+  /// Sets all songs to not playing in the database.
+  static Future<void> setAllSongsToNotPlaying() async {
+    await isarDBInstance.writeTxn(() async {
+      final songDataListFromDataBase =
+          await isarDBInstance.allSongs.where().findAll();
+      for (var songDatafromDB in songDataListFromDataBase) {
+        songDatafromDB.songIsPlaying = false;
+      }
+      await isarDBInstance.allSongs.putAll(songDataListFromDataBase);
+    });
   }
 }
