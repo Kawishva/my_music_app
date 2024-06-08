@@ -7,7 +7,9 @@ import 'package:my_music_app/mainScreenWithNavigation/audioTraySmall.dart';
 import 'package:my_music_app/mainScreenWithNavigation/navigationBar/navigationBar.dart';
 import 'package:my_music_app/mainScreenWithNavigation/search_bar.dart';
 import 'package:provider/provider.dart';
+import '../generalFunctions/audioStream.dart';
 import '../generalFunctions/navigationBarChange.dart';
+import '../isarDatabase/databaseHelper/song.dart';
 import 'audioTrayLarge.dart';
 import 'models/audioButtons.dart';
 import 'screens/exploreScreen/mainScreenHolder.dart';
@@ -174,6 +176,17 @@ class _SplashScreenState extends State<MainScreenWithNavigation> {
   }
 
   void _onAudioTrayCloseFuntion() {
+    SongData? selectedAudio = context.read<AudiostreamFunctions>().selectedSong;
+
+    if (selectedAudio == null) {
+      SongData fisrtSong = context.read<DataBaseHelper>().songDataList.first;
+      SongData nextSong = context.read<DataBaseHelper>().songDataList[1];
+      SongData lastSong = context.read<DataBaseHelper>().songDataList.last;
+      context
+          .read<AudiostreamFunctions>()
+          .setAudioData(fisrtSong, nextSong, lastSong);
+    }
+
     context.read<NavigationBarChange>().onAudioTrayCloseFuntion();
   }
 

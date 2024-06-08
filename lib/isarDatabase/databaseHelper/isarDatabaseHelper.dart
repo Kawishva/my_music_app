@@ -305,6 +305,12 @@ class DataBaseHelper extends ChangeNotifier {
       }
     });
 
+    for (var song in selectedPlayListSongsDataList) {
+      if (song.songId == songId) {
+        song.songIsMyFavourite = !song.songIsMyFavourite;
+      }
+    }
+
     await fetchFavouriteSongsFromSongData();
     notifyListeners();
   }
@@ -393,6 +399,14 @@ class DataBaseHelper extends ChangeNotifier {
           }
         }
 
+        for (var song in selectedPlayListSongsDataList) {
+          if (song.songId == songId) {
+            song.songIsPlaying = !isPlaying;
+          } else {
+            song.songIsPlaying = false;
+          }
+        }
+
         // Update the local favouriteSongDataList
         for (var song in favouriteSongDataList) {
           if (song.songId == songId) {
@@ -406,9 +420,6 @@ class DataBaseHelper extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Dummy method placeholder for future use.
-  Future<void> getSongIsPlayingValueFromDataBase() async {}
-
   /// Sets all songs to not playing in the database.
   static Future<void> setAllSongsToNotPlaying() async {
     await isarDBInstance.writeTxn(() async {
@@ -419,5 +430,12 @@ class DataBaseHelper extends ChangeNotifier {
       }
       await isarDBInstance.allSongs.putAll(songDataListFromDataBase);
     });
+  }
+
+  void shuffleSongs() {
+    songDataList.shuffle();
+    favouriteSongDataList.shuffle();
+    selectedPlayListSongsDataList.shuffle();
+    notifyListeners();
   }
 }

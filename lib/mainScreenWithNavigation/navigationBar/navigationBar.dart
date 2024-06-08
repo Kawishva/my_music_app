@@ -86,7 +86,7 @@ class _NavigationBarHolderState extends State<NavigationBarHolder> {
                         ),
                 ],
                 buttonOnPressed: () =>
-                    _navigationBarIndexChangeFunction(0, -1, 0),
+                    _navigationBarIndexChangeFunction(0, -1, 0, "EXPLORE"),
                 buttonColor: navigationBarChangeInstance.navigationIndex == 0
                     ? const Color(0xFF44C7FF)
                     : Colors.transparent,
@@ -128,7 +128,7 @@ class _NavigationBarHolderState extends State<NavigationBarHolder> {
                           ),
                   ],
                   buttonOnPressed: () =>
-                      _navigationBarIndexChangeFunction(1, -1, 0),
+                      _navigationBarIndexChangeFunction(1, -1, 0, "All songs"),
                   buttonColor: navigationBarChangeInstance.navigationIndex == 1
                       ? const Color(0xFF44C7FF)
                       : Colors.transparent,
@@ -158,7 +158,7 @@ class _NavigationBarHolderState extends State<NavigationBarHolder> {
                           ),
                   ],
                   buttonOnPressed: () =>
-                      _navigationBarIndexChangeFunction(2, -1, 0),
+                      _navigationBarIndexChangeFunction(2, -1, 0, "Favourites"),
                   buttonColor: navigationBarChangeInstance.navigationIndex == 2
                       ? const Color(0xFF44C7FF)
                       : Colors.transparent,
@@ -229,7 +229,10 @@ class _NavigationBarHolderState extends State<NavigationBarHolder> {
                         ],
                         buttonOnPressed: () =>
                             _navigationBarIndexChangeFunction(
-                                3, index, playListDataList[index].playListId),
+                                3,
+                                index,
+                                playListDataList[index].playListId,
+                                playListDataList[index].playListName),
                         buttonColor:
                             navigationBarChangeInstance.playListviewIndex ==
                                     index
@@ -251,10 +254,14 @@ class _NavigationBarHolderState extends State<NavigationBarHolder> {
     context.read<DataBaseHelper>().fetchAllPlayListsDataFromDataBase();
   }
 
-  void _navigationBarIndexChangeFunction(
-      int navigationBarIndex, int playListviewSelectedIndex, int playListId) {
-    context.read<NavigationBarChange>().navigationBarIndexChangeFunction(
-        navigationBarIndex, playListviewSelectedIndex);
+  void _navigationBarIndexChangeFunction(int navigationBarIndex,
+      int playListviewSelectedIndex, int playListId, String playListName) {
+    final navigationBarChangeInstance = context.read<NavigationBarChange>();
+
+    navigationBarChangeInstance.setplayListNamgechange(false);
+
+    navigationBarChangeInstance.navigationBarIndexChangeFunction(
+        navigationBarIndex, playListviewSelectedIndex, playListName);
 
     context.read<DataBaseHelper>().fetchSongsListToSelectedPlayList(playListId);
   }

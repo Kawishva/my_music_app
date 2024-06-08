@@ -1,13 +1,22 @@
+// ignore_for_file: must_be_immutable
+
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:icons_plus/icons_plus.dart';
+import 'package:provider/provider.dart';
+import '../generalFunctions/audioStream.dart';
+import '../generalFunctions/navigationBarChange.dart';
+import '../isarDatabase/databaseHelper/isarDatabaseHelper.dart';
+import '../isarDatabase/databaseHelper/song.dart';
 import 'models/audioButtons.dart';
 
 class AudioTraySmall extends StatefulWidget {
   final Function() onAudioTrayMinimizingFuntion, onAudioTrayCloseFuntion;
+  List<SongData> songsData = [];
+  SongData? selectedAudio;
 
-  const AudioTraySmall(
+  AudioTraySmall(
       {super.key,
       required this.onAudioTrayMinimizingFuntion,
       required this.onAudioTrayCloseFuntion,
@@ -18,15 +27,49 @@ class AudioTraySmall extends StatefulWidget {
 }
 
 class _AudioTraySmallState extends State<AudioTraySmall> {
-  bool isMyFavourite = false;
-  bool songIsPLaying = false;
+  @override
+  void initState() {
+    reedSongs();
+    readPlaylist();
+    readFavourite();
+    widget.songsData.clear();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final dataBaseHelperContext = Provider.of<DataBaseHelper>(context);
+    final navigationBarChangeInstance =
+        Provider.of<NavigationBarChange>(context);
+
+    final audioStreamInstance = Provider.of<AudiostreamFunctions>(context);
+
+    widget.selectedAudio = audioStreamInstance.getSelectedSongData;
+
+    // Determine the list of songs to display based on the current navigation bar index
+    List<SongData> songDataList = dataBaseHelperContext.songDataList;
+    List<SongData> favouriteSongDataList =
+        dataBaseHelperContext.favouriteSongDataList;
+    List<SongData> selectedPlayListSongsDataList =
+        dataBaseHelperContext.selectedPlayListSongsDataList;
+
+    if (navigationBarChangeInstance.navigationBarIndex == 1 ||
+        navigationBarChangeInstance.navigationBarIndex == 0) {
+      widget.songsData = songDataList;
+    }
+    if (navigationBarChangeInstance.navigationBarIndex == 2) {
+      widget.songsData = favouriteSongDataList;
+    }
+    if (navigationBarChangeInstance.navigationBarIndex == 3) {
+      widget.songsData = selectedPlayListSongsDataList;
+    }
+
+    // Determine the list of songs to display based on the current navigation bar index
+
     return Align(
       alignment: Alignment.bottomCenter,
       child: Padding(
-        padding: const EdgeInsets.only(bottom: 5, left: 150),
+        padding: const EdgeInsets.only(bottom: 10, left: 150),
         child: Container(
           width: 350,
           height: 110,
@@ -54,7 +97,7 @@ class _AudioTraySmallState extends State<AudioTraySmall> {
             ],
           ),
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
+            padding: const EdgeInsets.only(right: 5, left: 5, bottom: 0),
             child: Stack(
               alignment: Alignment.center,
               children: [
@@ -67,7 +110,7 @@ class _AudioTraySmallState extends State<AudioTraySmall> {
                       children: [
                         Padding(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 0),
+                              horizontal: 5, vertical: 0),
                           child: Container(
                             height: 90,
                             width: 90,
@@ -75,33 +118,46 @@ class _AudioTraySmallState extends State<AudioTraySmall> {
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            child: Icon(
-                              Bootstrap.music_note_beamed,
-                              size: 60,
-                            ),
+                            child: widget.selectedAudio != null &&
+                                    widget.selectedAudio!.imageByteArray
+                                        .isNotEmpty
+                                ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(10),
+                                    child: Image.memory(
+                                      widget.selectedAudio!.imageByteArray,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  )
+                                : Icon(
+                                    Bootstrap.music_note_beamed,
+                                    size: 60,
+                                  ),
                           ),
                         ),
                         Padding(
-                          padding: const EdgeInsets.only(top: 15),
+                          padding: const EdgeInsets.only(top: 25, right: 5),
                           child: Container(
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                Text(
-                                  "Song Name",
-                                  textAlign: TextAlign.start,
-                                  overflow: TextOverflow.fade,
-                                  style: GoogleFonts.alatsi(
-                                    color: Colors.white,
-                                    letterSpacing: 1,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 11,
+                                Container(
+                                  width: 150,
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    widget.selectedAudio!.songTitle,
+                                    textAlign: TextAlign.center,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: GoogleFonts.alatsi(
+                                      color: Colors.white,
+                                      letterSpacing: 1,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 10,
+                                    ),
                                   ),
                                 ),
                                 Padding(
-                                  padding: const EdgeInsets.only(
-                                      left: 5, right: 5, bottom: 2, top: 7),
+                                  padding: const EdgeInsets.all(5),
                                   child: Container(
                                     height: 20,
                                     width: 210,
@@ -141,7 +197,8 @@ class _AudioTraySmallState extends State<AudioTraySmall> {
                                         CrossAxisAlignment.center,
                                     children: [
                                       AudioButtons(
-                                        onButtonPressed: () {},
+                                        onButtonPressed: () =>
+                                            _shuffleSongsList(),
                                         buttonIcon: Bootstrap.shuffle,
                                         buttonWidth: 30,
                                         buttonHeight: 30,
@@ -149,7 +206,8 @@ class _AudioTraySmallState extends State<AudioTraySmall> {
                                         buttonBorderRadiusSize: 8,
                                       ),
                                       AudioButtons(
-                                        onButtonPressed: () {},
+                                        onButtonPressed: () =>
+                                            _playPreviousSong(),
                                         buttonIcon:
                                             Bootstrap.skip_backward_fill,
                                         buttonWidth: 30,
@@ -158,17 +216,22 @@ class _AudioTraySmallState extends State<AudioTraySmall> {
                                         buttonBorderRadiusSize: 8,
                                       ),
                                       AudioButtons(
-                                        onButtonPressed: () {},
-                                        buttonIcon: songIsPLaying
-                                            ? Bootstrap.pause_circle_fill
-                                            : Bootstrap.play_circle_fill,
+                                        onButtonPressed: () =>
+                                            _songPalyAndPause(
+                                                widget.selectedAudio!,
+                                                widget.selectedAudio!,
+                                                widget.selectedAudio!),
+                                        buttonIcon:
+                                            widget.selectedAudio!.songIsPlaying
+                                                ? Bootstrap.pause_circle_fill
+                                                : Bootstrap.play_circle_fill,
                                         buttonWidth: 40,
                                         buttonHeight: 40,
                                         buttonIconSize: 30,
                                         buttonBorderRadiusSize: 10,
                                       ),
                                       AudioButtons(
-                                        onButtonPressed: () {},
+                                        onButtonPressed: () => _playNextSong(),
                                         buttonIcon: Bootstrap.skip_forward_fill,
                                         buttonWidth: 30,
                                         buttonHeight: 30,
@@ -195,11 +258,12 @@ class _AudioTraySmallState extends State<AudioTraySmall> {
                   ),
                 ),
                 Align(
-                  alignment: AlignmentDirectional(-0.25, -0.7),
+                  alignment: AlignmentDirectional(-0.2786, -0.5),
                   child: Builder(builder: (context) {
                     return AudioButtons(
-                      onButtonPressed: () {},
-                      buttonIcon: isMyFavourite
+                      onButtonPressed: () => _addOrRemoveSongFromFavourite(
+                          widget.selectedAudio!.songId),
+                      buttonIcon: widget.selectedAudio!.songIsMyFavourite
                           ? Bootstrap.heart_fill
                           : Bootstrap.heart,
                       buttonWidth: 25,
@@ -212,7 +276,7 @@ class _AudioTraySmallState extends State<AudioTraySmall> {
                 Align(
                   alignment: Alignment.topCenter,
                   child: Padding(
-                    padding: const EdgeInsets.only(right: 2),
+                    padding: const EdgeInsets.only(right: 2, top: 2),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -248,5 +312,108 @@ class _AudioTraySmallState extends State<AudioTraySmall> {
         ),
       ),
     );
+  }
+
+  // Fetch all songs data from the database
+  void reedSongs() {
+    context.read<DataBaseHelper>().fetchSongDataFromDataBase();
+  }
+
+  // Fetch all playlists data from the database
+  void readPlaylist() {
+    context.read<DataBaseHelper>().fetchAllPlayListsDataFromDataBase();
+  }
+
+  // Fetch all favourite songs data from the database
+  void readFavourite() {
+    context.read<DataBaseHelper>().fetchFavouriteSongsFromSongData();
+  }
+
+  /// Adds or removes a song from the favourites list.
+  void _addOrRemoveSongFromFavourite(int songId) {
+    context.read<DataBaseHelper>().addOrRemoveSongFromFavourite(songId);
+  }
+
+  void _songPalyAndPause(
+      SongData selectedSong, SongData nextSong, SongData previusSong) {
+    context
+        .read<AudiostreamFunctions>()
+        .setAudioData(selectedSong, nextSong, previusSong);
+    context.read<DataBaseHelper>().songPalyAndPause(selectedSong.songId);
+  }
+
+  void _shuffleSongsList() {
+    context.read<DataBaseHelper>().shuffleSongs();
+    final audioStreamInstance = context.read<AudiostreamFunctions>();
+    SongData? previusSong = audioStreamInstance.getPreviousSongData;
+    SongData? selectedSong = audioStreamInstance.getSelectedSongData;
+    SongData? nextSong = audioStreamInstance.getNextSongData;
+
+    for (int i = 0; i < widget.songsData.length; i++) {
+      if (widget.songsData[i] == selectedSong) {
+        if (i == 0) {
+          previusSong = widget.songsData.last;
+          nextSong = widget.songsData[i + 1];
+          break;
+        }
+        if (widget.songsData.length == i + 1) {
+          previusSong = widget.songsData[i - 1];
+          nextSong = widget.songsData.first;
+          break;
+        } else {
+          previusSong = widget.songsData[i - 1];
+          nextSong = widget.songsData[i + 1];
+        }
+      }
+    }
+    audioStreamInstance.setAudioData(selectedSong!, nextSong!, previusSong!);
+  }
+
+  void _playNextSong() {
+    final audioStreamInstance = context.read<AudiostreamFunctions>();
+    SongData? nextSong = audioStreamInstance.getPreviousSongData;
+    SongData? selectedSong = audioStreamInstance.getNextSongData;
+    SongData? previusSong = audioStreamInstance.getSelectedSongData;
+
+    if (nextSong != selectedSong &&
+        selectedSong != previusSong &&
+        nextSong != previusSong) {
+      for (int i = 0; i < widget.songsData.length; i++) {
+        if (widget.songsData[i] == selectedSong) {
+          if (widget.songsData.length == i + 1) {
+            nextSong = widget.songsData.first;
+          } else {
+            nextSong = widget.songsData[i + 1];
+          }
+          break;
+        }
+      }
+    }
+    context.read<DataBaseHelper>().songPalyAndPause(selectedSong!.songId);
+    audioStreamInstance.setAudioData(selectedSong, nextSong!, previusSong!);
+  }
+
+  void _playPreviousSong() {
+    final audioStreamInstance = context.read<AudiostreamFunctions>();
+    SongData? previusSong = audioStreamInstance.getNextSongData;
+    SongData? selectedSong = audioStreamInstance.getPreviousSongData;
+    SongData? nextSong = audioStreamInstance.getSelectedSongData;
+
+    if (nextSong != selectedSong &&
+        selectedSong != previusSong &&
+        nextSong != previusSong) {
+      for (int i = 0; i < widget.songsData.length; i++) {
+        if (widget.songsData[i] == selectedSong) {
+          if (i == 0) {
+            previusSong = widget.songsData.last;
+          } else {
+            previusSong = widget.songsData[i - 1];
+          }
+          break;
+        }
+      }
+    }
+    context.read<DataBaseHelper>().songPalyAndPause(selectedSong!.songId);
+    audioStreamInstance.setAudioData(selectedSong, nextSong!, previusSong!);
   }
 }

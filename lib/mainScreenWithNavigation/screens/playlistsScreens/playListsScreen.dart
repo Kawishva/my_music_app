@@ -45,12 +45,15 @@ class _PlayListsScreensState extends State<PlayListsScreens> {
         dataBaseHelperContext.selectedPlayListSongsDataList;
 
     if (navigationBarChangeInstance.navigationBarIndex == 1) {
+      widget.songsData.cast();
       widget.songsData = songDataList;
     }
     if (navigationBarChangeInstance.navigationBarIndex == 2) {
+      widget.songsData.cast();
       widget.songsData = favouriteSongDataList;
     }
     if (navigationBarChangeInstance.navigationBarIndex == 3) {
+      widget.songsData.cast();
       widget.songsData = selectedPlayListSongsDataList;
     }
 
@@ -108,13 +111,22 @@ class _PlayListsScreensState extends State<PlayListsScreens> {
                                 height: 60,
                                 child: IconButton(
                                     onPressed: () => _songPalyAndPause(
-                                        widget.songsData[index]),
+                                        widget.songsData[index],
+                                        index != widget.songsData.length - 1
+                                            ? widget.songsData[index + 1]
+                                            : widget.songsData.first,
+                                        index != 0
+                                            ? widget.songsData[index - 1]
+                                            : widget.songsData.last),
                                     icon: Icon(
                                       widget.songsData[index].songIsPlaying
                                           ? Bootstrap.pause_circle_fill
                                           : Bootstrap.play_circle_fill,
                                       size: 60,
-                                      color: Colors.black.withOpacity(0.5),
+                                      color:
+                                          widget.songsData[index].songIsPlaying
+                                              ? Colors.white.withOpacity(0.8)
+                                              : Colors.white.withOpacity(0.4),
                                     ),
                                     style: ButtonStyle(
                                         backgroundColor:
@@ -275,9 +287,13 @@ class _PlayListsScreensState extends State<PlayListsScreens> {
   }
 
   /// Toggles play/pause state of a song.
-  void _songPalyAndPause(SongData selectedSong) {
-    context.read<AudiostreamFunctions>().setAudioData(selectedSong);
+  void _songPalyAndPause(
+      SongData selectedSong, SongData nextSong, SongData previusSong) {
+    context
+        .read<AudiostreamFunctions>()
+        .setAudioData(selectedSong, nextSong, previusSong);
     context.read<NavigationBarChange>().setAudioTrayersAreVisible();
+    context.read<NavigationBarChange>().setplayListNamgechange(true);
     context.read<DataBaseHelper>().songPalyAndPause(selectedSong.songId);
   }
 

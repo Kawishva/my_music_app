@@ -5,11 +5,15 @@ class NavigationBarChange extends ChangeNotifier {
   int playListviewSelectedIndex = -1;
   bool screenIsAllSongsScreen = false;
   bool audioTrayersAreVisible = false;
+  bool playListNamgechange = false;
+  String playListName = "";
+  String tempPlayListName = "";
 
-  void navigationBarIndexChangeFunction(
-      int navigationBarIndex, int playListviewSelectedIndex) {
+  void navigationBarIndexChangeFunction(int navigationBarIndex,
+      int playListviewSelectedIndex, String tempPlayListName) {
     this.navigationBarIndex = navigationBarIndex;
     this.playListviewSelectedIndex = playListviewSelectedIndex;
+    this.tempPlayListName = tempPlayListName;
 
     if (navigationBarIndex == 1) {
       this.screenIsAllSongsScreen = true;
@@ -17,6 +21,13 @@ class NavigationBarChange extends ChangeNotifier {
       this.screenIsAllSongsScreen = false;
     }
 
+    notifyListeners();
+  }
+
+  void setplayListNamgechange(bool playListNamgechange) {
+    if (playListNamgechange) {
+      this.playListName = this.tempPlayListName;
+    }
     notifyListeners();
   }
 
@@ -30,6 +41,7 @@ class NavigationBarChange extends ChangeNotifier {
     notifyListeners();
   }
 
+  String get getPlayListName => this.playListName;
   int get navigationIndex => this.navigationBarIndex;
   int get playListviewIndex => this.playListviewSelectedIndex;
   bool get isAllSongsScreen => this.screenIsAllSongsScreen;

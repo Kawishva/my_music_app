@@ -33,7 +33,7 @@ class AudioButtons extends StatelessWidget {
         // Adjusted to use ButtonStyle with MaterialStateProperty
         style: ButtonStyle(
           backgroundColor: WidgetStateProperty.all(Colors.transparent),
-          overlayColor: WidgetStateProperty.all(Colors.black.withOpacity(0.5)),
+          overlayColor: WidgetStateProperty.all(Colors.white.withOpacity(0.1)),
           padding: WidgetStateProperty.all(EdgeInsets.zero),
           shape: WidgetStateProperty.all<RoundedRectangleBorder>(
             RoundedRectangleBorder(
