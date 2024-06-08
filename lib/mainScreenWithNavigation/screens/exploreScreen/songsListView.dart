@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:icons_plus/icons_plus.dart';
+import 'package:provider/provider.dart';
+import '../../../generalFunctions/navigationBarChange.dart';
+import '../../../isarDatabase/databaseHelper/isarDatabaseHelper.dart';
+import '../../../isarDatabase/databaseHelper/song.dart';
 import '../../models/playListsSelectionPopUpWindow.dart';
 
 class SongsListView extends StatefulWidget {
+  final int playListID;
+
   const SongsListView({
     super.key,
+    required this.playListID,
   });
 
   @override
@@ -13,19 +20,25 @@ class SongsListView extends StatefulWidget {
 }
 
 class _SongsLisViewState extends State<SongsListView> {
-  int playButtonIsPressed = -1;
-  bool songIsPlaying = false;
-  bool isMyFavourite = false;
-  List<int> allSongList = [1, 2];
+  @override
+  void initState() {
+    super.initState();
+    _fetchSongsToPlaylist();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final dataBaseHelperContext = Provider.of<DataBaseHelper>(context);
+
+    List<SongData> selectedPlayListSongsDataList =
+        dataBaseHelperContext.selectedPlayListSongsDataList;
+
     return Container(
       height: 145,
       child: ListView.builder(
           scrollDirection: Axis.horizontal,
           padding: EdgeInsets.only(right: 265, top: 5, bottom: 5),
-          itemCount: allSongList.length,
+          itemCount: selectedPlayListSongsDataList.length,
           itemBuilder: (context, index) {
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 5),
@@ -60,14 +73,11 @@ class _SongsLisViewState extends State<SongsListView> {
                             width: 60,
                             height: 60,
                             child: IconButton(
-                              onPressed: () {
-                                setState(() {
-                                  playButtonIsPressed = index;
-                                  songIsPlaying = !songIsPlaying;
-                                });
-                              },
+                              onPressed: () => _songPalyAndPause(
+                                  selectedPlayListSongsDataList[index].songId),
                               icon: Icon(
-                                playButtonIsPressed == index && songIsPlaying
+                                selectedPlayListSongsDataList[index]
+                                        .songIsPlaying
                                     ? Bootstrap.pause_circle_fill
                                     : Bootstrap.play_circle_fill,
                                 size: 60,
@@ -104,15 +114,22 @@ class _SongsLisViewState extends State<SongsListView> {
                                     width: 20,
                                     height: 20,
                                     child: IconButton(
-                                      onPressed: () {},
+                                      onPressed: () =>
+                                          _addOrRemoveSongFromFavourite(
+                                              selectedPlayListSongsDataList[
+                                                      index]
+                                                  .songId),
                                       icon: Icon(
-                                        isMyFavourite
+                                        selectedPlayListSongsDataList[index]
+                                                .songIsMyFavourite
                                             ? Bootstrap.heart_fill
                                             : Bootstrap.heart,
                                         size: 17,
-                                        color: isMyFavourite
-                                            ? Color(0xFF880900)
-                                            : Colors.black,
+                                        color:
+                                            selectedPlayListSongsDataList[index]
+                                                    .songIsMyFavourite
+                                                ? Color(0xFF880900)
+                                                : Colors.black,
                                       ),
                                       // Adjusted to use ButtonStyle with MaterialStateProperty
                                       style: ButtonStyle(
@@ -138,8 +155,10 @@ class _SongsLisViewState extends State<SongsListView> {
                                       width: 20,
                                       height: 20,
                                       child: IconButton(
-                                        onPressed: () =>
-                                            _onCreatePopUpWindow(context),
+                                        onPressed: () => _onCreatePopUpWindow(
+                                            context,
+                                            selectedPlayListSongsDataList[index]
+                                                .songId),
                                         icon: Icon(
                                           Bootstrap.three_dots_vertical,
                                           size: 17,
@@ -176,7 +195,7 @@ class _SongsLisViewState extends State<SongsListView> {
                     Padding(
                       padding: const EdgeInsets.only(left: 0),
                       child: Text(
-                        allSongList[index].toString(),
+                        selectedPlayListSongsDataList[index].songId.toString(),
                         textAlign: TextAlign.center,
                         overflow: TextOverflow.fade,
                         style: GoogleFonts.alatsi(
@@ -206,9 +225,29 @@ class _SongsLisViewState extends State<SongsListView> {
     );
   }
 
-  void _onCreatePopUpWindow(BuildContext newContext) {
+  /// Adds or removes a song from the favourites list.
+  void _addOrRemoveSongFromFavourite(int songId) {
+    context.read<DataBaseHelper>().addOrRemoveSongFromFavourite(songId);
+  }
+
+  void _fetchSongsToPlaylist() {
+    context
+        .read<DataBaseHelper>()
+        .fetchSongsListToSelectedPlayList(widget.playListID);
+  }
+
+  /// Toggles play/pause state of a song.
+  void _songPalyAndPause(int songId) {
+    context.read<NavigationBarChange>().setAudioTrayersAreVisible();
+    context.read<DataBaseHelper>().songPalyAndPause(songId);
+  }
+
+  void _onCreatePopUpWindow(BuildContext newContext, int songId) {
     debugPrint("vfdvf");
     showDialog(
-        context: newContext, builder: (context) => PlayListPopUpWindow());
+        context: newContext,
+        builder: (context) => PlayListPopUpWindow(
+              songId: songId,
+            ));
   }
 }

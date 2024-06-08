@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import '../../../isarDatabase/databaseHelper/isarDatabaseHelper.dart';
+import '../../../isarDatabase/databaseHelper/playlist.dart';
 import 'songsListView.dart';
 
 class MainScreenHolder extends StatefulWidget {
@@ -12,17 +15,32 @@ class MainScreenHolder extends StatefulWidget {
 }
 
 class _MainScreenHolderState extends State<MainScreenHolder> {
-  List<String> playLists = ["23"];
+  @override
+  void initState() {
+    super.initState();
+    readPlaylist();
+  }
+
+// Fetch all playlists data from the database
+  void readPlaylist() {
+    context.read<DataBaseHelper>().fetchAllPlayListsDataFromDataBase();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final dataBaseHelperContext = Provider.of<DataBaseHelper>(context);
+    List<PlayListData> playListDataList =
+        dataBaseHelperContext.playListDataList;
+
     return Container(
       decoration: BoxDecoration(color: Colors.transparent),
       child: ListView.builder(
           scrollDirection: Axis.vertical,
           padding: EdgeInsets.only(top: 5, left: 5, bottom: 95),
-          itemCount: playLists.length,
+          itemCount: playListDataList.length,
           itemBuilder: (context, index) {
+            //  context.read<DataBaseHelper>().fetchSongsListToSelectedPlayList(
+            //   playListDataList[index].playListId);
             return Container(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -31,7 +49,7 @@ class _MainScreenHolderState extends State<MainScreenHolder> {
                   Padding(
                     padding: const EdgeInsets.only(left: 5),
                     child: Text(
-                      playLists[index].toString().toUpperCase(),
+                      playListDataList[index].playListName.toUpperCase(),
                       textAlign: TextAlign.center,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.alatsi(
@@ -48,7 +66,11 @@ class _MainScreenHolderState extends State<MainScreenHolder> {
                       ),
                       child: Container(
                         height: 2,
-                        width: playLists[index].length.toDouble() * 7,
+                        width: playListDataList[index]
+                                .playListName
+                                .length
+                                .toDouble() *
+                            7,
                         decoration: BoxDecoration(
                             color: Color(0xFF860B02),
                             borderRadius: BorderRadius.circular(5),
@@ -64,7 +86,9 @@ class _MainScreenHolderState extends State<MainScreenHolder> {
                       )),
                   Padding(
                     padding: const EdgeInsets.only(top: 5, bottom: 20),
-                    child: SongsListView(),
+                    child: SongsListView(
+                      playListID: playListDataList[index].playListId,
+                    ),
                   )
                 ],
               ),

@@ -1,13 +1,22 @@
+// ignore_for_file: must_be_immutable
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:icons_plus/icons_plus.dart';
+import 'package:provider/provider.dart';
+import '../generalFunctions/audioStream.dart';
+import '../generalFunctions/navigationBarChange.dart';
+import '../isarDatabase/databaseHelper/isarDatabaseHelper.dart';
+import '../isarDatabase/databaseHelper/song.dart';
 import 'models/audioButtons.dart';
+import 'models/playListsSelectionPopUpWindow.dart';
 
 class AudioTrayLarge extends StatefulWidget {
   final Function() onAudioTrayMinimizingFuntion, onAudioTrayCloseFuntion;
-
-  const AudioTrayLarge({
+  List<SongData> songsData = [];
+  SongData? selectedAudio;
+  AudioTrayLarge({
     super.key,
     required this.onAudioTrayMinimizingFuntion,
     required this.onAudioTrayCloseFuntion,
@@ -19,12 +28,45 @@ class AudioTrayLarge extends StatefulWidget {
 
 class _AudioTrayLargeState extends State<AudioTrayLarge> {
   bool audioTrayPlayListIsExpanded = true;
-  bool isMyFavourite = false;
-  bool songIsPLaying = false;
-  List<int> allSongList = [];
+  final player = AudioPlayer();
+
+  @override
+  void initState() {
+    reedSongs();
+    readPlaylist();
+    readFavourite();
+    widget.songsData.clear();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final dataBaseHelperContext = Provider.of<DataBaseHelper>(context);
+    final navigationBarChangeInstance =
+        Provider.of<NavigationBarChange>(context);
+
+    final audioStreamInstance = Provider.of<AudiostreamFunctions>(context);
+
+    widget.selectedAudio = audioStreamInstance.getSelectedSongData;
+
+    // Determine the list of songs to display based on the current navigation bar index
+    List<SongData> songDataList = dataBaseHelperContext.songDataList;
+    List<SongData> favouriteSongDataList =
+        dataBaseHelperContext.favouriteSongDataList;
+    List<SongData> selectedPlayListSongsDataList =
+        dataBaseHelperContext.selectedPlayListSongsDataList;
+
+    if (navigationBarChangeInstance.navigationBarIndex == 1 ||
+        navigationBarChangeInstance.navigationBarIndex == 0) {
+      widget.songsData = songDataList;
+    }
+    if (navigationBarChangeInstance.navigationBarIndex == 2) {
+      widget.songsData = favouriteSongDataList;
+    }
+    if (navigationBarChangeInstance.navigationBarIndex == 3) {
+      widget.songsData = selectedPlayListSongsDataList;
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 44, horizontal: 10),
       child: Align(
@@ -99,10 +141,19 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
                         decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(15)),
-                        child: Icon(
-                          Bootstrap.music_note_beamed,
-                          size: 100,
-                        ),
+                        child: widget.selectedAudio != null &&
+                                widget.selectedAudio!.imageByteArray.isNotEmpty
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(15),
+                                child: Image.memory(
+                                  widget.selectedAudio!.imageByteArray,
+                                  fit: BoxFit.cover,
+                                ),
+                              )
+                            : Icon(
+                                Bootstrap.music_note_beamed,
+                                size: 60,
+                              ),
                       ),
                     ),
                   ),
@@ -118,7 +169,7 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
                   children: [
                     AudioButtons(
                       onButtonPressed: () {},
-                      buttonIcon: isMyFavourite
+                      buttonIcon: widget.selectedAudio!.songIsMyFavourite
                           ? Bootstrap.heart_fill
                           : Bootstrap.heart,
                       buttonWidth: 27,
@@ -130,26 +181,30 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Text(
-                          "Song Name",
-                          textAlign: TextAlign.start,
-                          overflow: TextOverflow.fade,
-                          style: GoogleFonts.alatsi(
-                            color: Colors.white,
-                            letterSpacing: 1,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
+                        Container(
+                          width: 170,
+                          child: Text(
+                            widget.selectedAudio!.songTitle,
+                            textAlign: TextAlign.center,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.alatsi(
+                              color: Colors.white,
+                              // letterSpacing: 1,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
                           ),
                         ),
                         // Artist name
                         Text(
-                          "Artist Name",
+                          widget.selectedAudio!.artistName,
                           textAlign: TextAlign.start,
                           overflow: TextOverflow.fade,
                           style: GoogleFonts.alatsi(
                             color: Colors.white,
-                            letterSpacing: 1,
-                            fontWeight: FontWeight.bold,
+                            //letterSpacing: 1,
+                            fontWeight: FontWeight.normal,
                             fontSize: 10,
                           ),
                         ),
@@ -157,7 +212,8 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
                     ),
                     Builder(builder: (newContext) {
                       return AudioButtons(
-                        onButtonPressed: () {},
+                        onButtonPressed: () => _onCreatePopUpWindow(
+                            context, widget.selectedAudio!.songId),
                         buttonIcon: Bootstrap.three_dots_vertical,
                         buttonWidth: 25,
                         buttonHeight: 25,
@@ -217,8 +273,9 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
                           buttonIconSize: 18,
                           buttonBorderRadiusSize: 8),
                       AudioButtons(
-                          onButtonPressed: () {},
-                          buttonIcon: songIsPLaying
+                          onButtonPressed: () =>
+                              _songPalyAndPause(widget.selectedAudio!),
+                          buttonIcon: widget.selectedAudio!.songIsPlaying
                               ? Bootstrap.pause_circle_fill
                               : Bootstrap.play_circle_fill,
                           buttonWidth: 40,
@@ -272,13 +329,14 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
                           child: ListView.builder(
                               scrollDirection: Axis.vertical,
                               padding: EdgeInsets.symmetric(vertical: 5),
-                              itemCount: allSongList.length,
+                              itemCount: widget.songsData.length,
                               itemBuilder: (context, index) {
                                 return Padding(
                                   padding: const EdgeInsets.symmetric(
                                       vertical: 2, horizontal: 6),
                                   child: ElevatedButton(
-                                    onPressed: () {},
+                                    onPressed: () => _songPalyAndPause(
+                                        widget.songsData[index]),
                                     style: ButtonStyle(
                                         padding: WidgetStateProperty.all(
                                             EdgeInsets.symmetric(
@@ -302,48 +360,89 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.center,
                                       children: [
-                                        Container(
-                                          alignment: Alignment.center,
-                                          padding: EdgeInsets.all(3),
-                                          decoration: BoxDecoration(
-                                              color: Colors.white,
-                                              borderRadius:
-                                                  BorderRadius.circular(5)),
-                                          child: Icon(
-                                            Bootstrap.music_note_beamed,
-                                            color: Colors.black,
-                                            size: 15,
-                                          ),
-                                        ),
                                         Padding(
                                           padding: const EdgeInsets.symmetric(
-                                              horizontal: 10),
-                                          child: Text(
-                                            "names",
-                                            textAlign: TextAlign.start,
-                                            overflow: TextOverflow.fade,
-                                            style: GoogleFonts.alatsi(
-                                              color: Colors.white,
-                                              letterSpacing: 1,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 9,
-                                            ),
+                                              horizontal: 0, vertical: 5),
+                                          child: Container(
+                                            alignment: Alignment.center,
+                                            decoration: BoxDecoration(
+                                                color: Colors.white,
+                                                borderRadius:
+                                                    BorderRadius.circular(3)),
+                                            child: widget.songsData[index]
+                                                    .imageByteArray.isNotEmpty
+                                                ? ClipRRect(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            3),
+                                                    child: Image.memory(
+                                                      width: 35,
+                                                      height: 35,
+                                                      widget.songsData[index]
+                                                          .imageByteArray,
+                                                      fit: BoxFit.cover,
+                                                    ),
+                                                  )
+                                                : Icon(
+                                                    Bootstrap.music_note_beamed,
+                                                    size: 15,
+                                                    color: Colors.black,
+                                                  ),
                                           ),
                                         ),
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 10),
-                                          child: Text(
-                                            "artist name",
-                                            textAlign: TextAlign.start,
-                                            overflow: TextOverflow.fade,
-                                            style: GoogleFonts.alatsi(
-                                              color: Colors.white,
-                                              letterSpacing: 1,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 9,
+                                        Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 5,
+                                                      vertical: 2),
+                                              child: Container(
+                                                width: 173,
+                                                child: Text(
+                                                  widget.songsData[index]
+                                                      .songTitle,
+                                                  textAlign: TextAlign.start,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  maxLines: 1,
+                                                  style: GoogleFonts.alatsi(
+                                                    color: Colors.white,
+                                                    //  letterSpacing: 1,
+                                                    fontWeight:
+                                                        FontWeight.normal,
+                                                    fontSize: 11,
+                                                  ),
+                                                ),
+                                              ),
                                             ),
-                                          ),
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 5),
+                                              child: Container(
+                                                width: 173,
+                                                child: Text(
+                                                  widget.songsData[index]
+                                                      .artistName,
+                                                  textAlign: TextAlign.start,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: GoogleFonts.alatsi(
+                                                    color: Colors.white,
+                                                    //  letterSpacing: 1,
+                                                    fontWeight:
+                                                        FontWeight.normal,
+                                                    fontSize: 9,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ],
                                     ),
@@ -359,5 +458,38 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
         ),
       ),
     );
+  }
+
+  // Fetch all songs data from the database
+  void reedSongs() {
+    context.read<DataBaseHelper>().fetchSongDataFromDataBase();
+  }
+
+  // Fetch all playlists data from the database
+  void readPlaylist() {
+    context.read<DataBaseHelper>().fetchAllPlayListsDataFromDataBase();
+  }
+
+  // Fetch all favourite songs data from the database
+  void readFavourite() {
+    context.read<DataBaseHelper>().fetchFavouriteSongsFromSongData();
+  }
+
+  // Displays a popup window for playlist selection.
+  void _onCreatePopUpWindow(BuildContext newContext, int songId) {
+    context
+        .read<DataBaseHelper>()
+        .temporyPlayListLibraryForSelectedSong(songId);
+    showDialog(
+        context: newContext,
+        builder: (context) => PlayListPopUpWindow(
+              songId: songId,
+            ));
+  }
+
+  void _songPalyAndPause(SongData selectedSong) {
+    context.read<AudiostreamFunctions>().setAudioData(selectedSong);
+    // context.read<NavigationBarChange>().setAudioTrayersAreVisible();
+    context.read<DataBaseHelper>().songPalyAndPause(selectedSong.songId);
   }
 }

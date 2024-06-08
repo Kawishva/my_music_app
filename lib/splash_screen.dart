@@ -1,5 +1,7 @@
 import 'package:another_flutter_splash_screen/another_flutter_splash_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'isarDatabase/databaseHelper/isarDatabaseHelper.dart';
 import 'mainScreenWithNavigation/main_screen_with_navigation.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -12,6 +14,29 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    reedSongs();
+    readPlaylist();
+    readFavourite();
+    super.initState();
+  }
+
+  // Fetch all songs data from the database
+  void reedSongs() {
+    context.read<DataBaseHelper>().fetchSongDataFromDataBase();
+  }
+
+  // Fetch all playlists data from the database
+  void readPlaylist() {
+    context.read<DataBaseHelper>().fetchAllPlayListsDataFromDataBase();
+  }
+
+  // Fetch all favourite songs data from the database
+  void readFavourite() {
+    context.read<DataBaseHelper>().fetchFavouriteSongsFromSongData();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

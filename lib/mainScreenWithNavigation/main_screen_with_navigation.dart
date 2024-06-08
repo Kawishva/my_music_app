@@ -25,9 +25,6 @@ class MainScreenWithNavigation extends StatefulWidget {
 class _SplashScreenState extends State<MainScreenWithNavigation> {
   // The currently selected index of the navigation bar
   bool audioTrayIsMinimized = false;
-  bool playButtonIsPressed = false;
-  bool songIsPLaying = false;
-  bool audioTrayersAreVisible = false;
   String selectedDirectory = "";
 
   @override
@@ -85,8 +82,12 @@ class _SplashScreenState extends State<MainScreenWithNavigation> {
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   AudioButtons(
-                                    onButtonPressed: () =>
-                                        _onFolderPathPickFunction(),
+                                    onButtonPressed: () {
+                                      if (navigationBarChangeInstance
+                                          .isAllSongsScreen) {
+                                        _onFolderPathPickFunction();
+                                      }
+                                    },
                                     buttonIcon: navigationBarChangeInstance
                                             .isAllSongsScreen
                                         ? Bootstrap.plus_circle
@@ -100,7 +101,8 @@ class _SplashScreenState extends State<MainScreenWithNavigation> {
                                   AudioButtons(
                                     onButtonPressed: () =>
                                         _onAudioTrayCloseFuntion(),
-                                    buttonIcon: !audioTrayersAreVisible
+                                    buttonIcon: !navigationBarChangeInstance
+                                            .getAudioTrayVisibility
                                         ? Bootstrap.music_player
                                         : null,
                                     buttonWidth: 25,
@@ -139,7 +141,8 @@ class _SplashScreenState extends State<MainScreenWithNavigation> {
                 ),
               ),
               // Small audio tray
-              audioTrayIsMinimized && audioTrayersAreVisible
+              audioTrayIsMinimized &&
+                      navigationBarChangeInstance.getAudioTrayVisibility
                   ? AudioTraySmall(
                       onAudioTrayMinimizingFuntion: () =>
                           _onAudioTrayMinimizingAndMaximizingFuntion(),
@@ -147,7 +150,8 @@ class _SplashScreenState extends State<MainScreenWithNavigation> {
                     )
                   : Container(),
               // Large audio tray
-              !audioTrayIsMinimized && audioTrayersAreVisible
+              !audioTrayIsMinimized &&
+                      navigationBarChangeInstance.getAudioTrayVisibility
                   ? AudioTrayLarge(
                       onAudioTrayMinimizingFuntion: () =>
                           _onAudioTrayMinimizingAndMaximizingFuntion(),
@@ -170,9 +174,7 @@ class _SplashScreenState extends State<MainScreenWithNavigation> {
   }
 
   void _onAudioTrayCloseFuntion() {
-    setState(() {
-      audioTrayersAreVisible = !audioTrayersAreVisible;
-    });
+    context.read<NavigationBarChange>().onAudioTrayCloseFuntion();
   }
 
   Future<void> _onFolderPathPickFunction() async {

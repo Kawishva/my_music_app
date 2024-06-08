@@ -3,11 +3,13 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:on_popup_window_widget/on_popup_window_widget.dart';
 import 'package:provider/provider.dart';
 import '../../isarDatabase/databaseHelper/isarDatabaseHelper.dart';
-import '../../isarDatabase/databaseHelper/playlist.dart';
+import '../../isarDatabase/databaseHelper/temporyPlayList.dart';
 
 class PlayListPopUpWindow extends StatefulWidget {
+  final int songId;
   const PlayListPopUpWindow({
     super.key,
+    required this.songId,
   });
 
   @override
@@ -16,13 +18,17 @@ class PlayListPopUpWindow extends StatefulWidget {
 
 class _PlayListPopUpWindowState extends State<PlayListPopUpWindow> {
   @override
+  void initState() {
+    readPlaylist();
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final dataBaseHelperContext = Provider.of<DataBaseHelper>(context);
-    List<PlayListData> playListDataList =
-        dataBaseHelperContext.playListDataList;
 
-    List<bool> select =
-        List.generate(playListDataList.length, (index) => false);
+    List<TemporyPlayList> temporyPlayListdataList =
+        dataBaseHelperContext.temporyPlayListdataList;
 
     return OnPopupWindowWidget(
         duration: Duration.zero,
@@ -61,7 +67,7 @@ class _PlayListPopUpWindowState extends State<PlayListPopUpWindow> {
             child: ListView.builder(
                 scrollDirection: Axis.vertical,
                 padding: EdgeInsets.symmetric(horizontal: 5),
-                itemCount: playListDataList.length,
+                itemCount: temporyPlayListdataList.length,
                 itemBuilder: (context, index) {
                   return Container(
                     //  decoration: BoxDecoration(color: Colors.amber),
@@ -70,7 +76,7 @@ class _PlayListPopUpWindowState extends State<PlayListPopUpWindow> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text(
-                          playListDataList[index].playListName,
+                          temporyPlayListdataList[index].playListName,
                           textAlign: TextAlign.center,
                           overflow: TextOverflow.fade,
                           style: GoogleFonts.alatsi(
@@ -83,22 +89,26 @@ class _PlayListPopUpWindowState extends State<PlayListPopUpWindow> {
                         Transform.scale(
                           scale: 0.8, // Scale down the checkbox
                           child: Checkbox(
-                            value: select[index],
-                            tristate: true,
-                            activeColor:
-                                Colors.white, // Active color of the checkbox
-                            overlayColor: WidgetStateProperty.all(Colors
-                                .transparent), // Transparent overlay color
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                  5), // Rounded corners for the checkbox
-                            ),
-                            onChanged: (ticked) {
-                              setState(() {
-                                select[index] = ticked ?? false;
-                              });
-                            },
-                          ),
+                              value: temporyPlayListdataList[index]
+                                  .songIsInPlayList,
+                              tristate: false,
+                              activeColor:
+                                  Colors.white, // Active color of the checkbox
+                              overlayColor: WidgetStateProperty.all(Colors
+                                  .transparent), // Transparent overlay color
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                    5), // Rounded corners for the checkbox
+                              ),
+                              focusColor: Colors.white,
+                              onChanged: (ticked) {
+                                temporyPlayListdataList[index]
+                                    .songIsInPlayList = ticked ?? false;
+                                _addToPlayList(
+                                  temporyPlayListdataList[index].songId,
+                                  temporyPlayListdataList[index].playListId,
+                                );
+                              }),
                         ),
                       ],
                     ),
@@ -106,5 +116,18 @@ class _PlayListPopUpWindowState extends State<PlayListPopUpWindow> {
                 }),
           ),
         ));
+  }
+
+  void readPlaylist() {
+    context.read<DataBaseHelper>().fetchAllPlayListsDataFromDataBase();
+  }
+
+  void _addToPlayList(int songId, int playListId) {
+    final tempDatabaseInstance = context.read<DataBaseHelper>();
+
+    tempDatabaseInstance.fetchSongsListToSelectedPlayList(playListId);
+
+    tempDatabaseInstance.addOrRemoveSelectedSongsToSelectedPlayList(
+        playListId, songId);
   }
 }

@@ -3,6 +3,7 @@ import 'package:my_music_app/isarDatabase/databaseHelper/isarDatabaseHelper.dart
 import 'package:my_music_app/splash_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
+import 'generalFunctions/audioStream.dart';
 import 'generalFunctions/navigationBarChange.dart';
 
 Future<void> main() async {
@@ -32,6 +33,7 @@ Future<void> main() async {
       providers: [
         ChangeNotifierProvider(create: (context) => DataBaseHelper()),
         ChangeNotifierProvider(create: (context) => NavigationBarChange()),
+        ChangeNotifierProvider(create: (context) => AudiostreamFunctions()),
       ],
       child: MyApp(),
     ),

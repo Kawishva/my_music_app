@@ -21,18 +21,11 @@ class NavigationBarHolder extends StatefulWidget {
 }
 
 class _NavigationBarHolderState extends State<NavigationBarHolder> {
-  int navigationBarIndex = 0;
-  int playListviewSelectedIndex = -1;
-
   @override
   void initState() {
     widget.newPlaylistName.clear();
     readPlaylist();
     super.initState();
-  }
-
-  void readPlaylist() {
-    context.read<DataBaseHelper>().fetchAllPlayListsDataFromDataBase();
   }
 
   @override
@@ -92,7 +85,8 @@ class _NavigationBarHolderState extends State<NavigationBarHolder> {
                           offset: Offset(0, 0), // changes position of shadow
                         ),
                 ],
-                buttonOnPressed: () => _navigationBarIndexChangeFunction(0, -1),
+                buttonOnPressed: () =>
+                    _navigationBarIndexChangeFunction(0, -1, 0),
                 buttonColor: navigationBarChangeInstance.navigationIndex == 0
                     ? const Color(0xFF44C7FF)
                     : Colors.transparent,
@@ -119,7 +113,7 @@ class _NavigationBarHolderState extends State<NavigationBarHolder> {
                 padding: const EdgeInsets.only(left: 5, bottom: 0),
                 child: NavigationTextButton(
                   buttonBoxShadow: [
-                    navigationBarIndex == 1
+                    navigationBarChangeInstance.navigationBarIndex == 1
                         ? const BoxShadow(
                             color: Color(0xFF44C7FF),
                             spreadRadius: 3,
@@ -134,7 +128,7 @@ class _NavigationBarHolderState extends State<NavigationBarHolder> {
                           ),
                   ],
                   buttonOnPressed: () =>
-                      _navigationBarIndexChangeFunction(1, -1),
+                      _navigationBarIndexChangeFunction(1, -1, 0),
                   buttonColor: navigationBarChangeInstance.navigationIndex == 1
                       ? const Color(0xFF44C7FF)
                       : Colors.transparent,
@@ -149,7 +143,7 @@ class _NavigationBarHolderState extends State<NavigationBarHolder> {
                 padding: const EdgeInsets.only(left: 4),
                 child: NavigationTextButton(
                   buttonBoxShadow: [
-                    navigationBarIndex == 2
+                    navigationBarChangeInstance.navigationBarIndex == 2
                         ? const BoxShadow(
                             color: Color(0xFF44C7FF),
                             spreadRadius: 3,
@@ -164,7 +158,7 @@ class _NavigationBarHolderState extends State<NavigationBarHolder> {
                           ),
                   ],
                   buttonOnPressed: () =>
-                      _navigationBarIndexChangeFunction(2, -1),
+                      _navigationBarIndexChangeFunction(2, -1, 0),
                   buttonColor: navigationBarChangeInstance.navigationIndex == 2
                       ? const Color(0xFF44C7FF)
                       : Colors.transparent,
@@ -215,7 +209,9 @@ class _NavigationBarHolderState extends State<NavigationBarHolder> {
                       padding: const EdgeInsets.only(left: 5),
                       child: NavigationTextButton(
                         buttonBoxShadow: [
-                          playListviewSelectedIndex == index
+                          navigationBarChangeInstance
+                                      .playListviewSelectedIndex ==
+                                  index
                               ? const BoxShadow(
                                   color: Color(0xFF44C7FF),
                                   spreadRadius: 3,
@@ -232,14 +228,14 @@ class _NavigationBarHolderState extends State<NavigationBarHolder> {
                                 ),
                         ],
                         buttonOnPressed: () =>
-                            _navigationBarIndexChangeFunction(3, index),
+                            _navigationBarIndexChangeFunction(
+                                3, index, playListDataList[index].playListId),
                         buttonColor:
                             navigationBarChangeInstance.playListviewIndex ==
                                     index
                                 ? const Color(0xFF44C7FF)
                                 : Colors.transparent,
-                        buttonName:
-                            playListDataList.elementAt(index).playListName,
+                        buttonName: playListDataList[index].playListName,
                         buttonFontSize: 12,
                         buttonLetterSpacing: 1,
                         fontWeight: FontWeight.normal,
@@ -251,10 +247,16 @@ class _NavigationBarHolderState extends State<NavigationBarHolder> {
             ]));
   }
 
+  void readPlaylist() {
+    context.read<DataBaseHelper>().fetchAllPlayListsDataFromDataBase();
+  }
+
   void _navigationBarIndexChangeFunction(
-      int navigationBarIndex, int playListviewSelectedIndex) {
+      int navigationBarIndex, int playListviewSelectedIndex, int playListId) {
     context.read<NavigationBarChange>().navigationBarIndexChangeFunction(
         navigationBarIndex, playListviewSelectedIndex);
+
+    context.read<DataBaseHelper>().fetchSongsListToSelectedPlayList(playListId);
   }
 
   void _onCreatePopUpWindow(BuildContext newContext) {
