@@ -1,8 +1,17 @@
+// ignore_for_file: must_be_immutable
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:my_music_app/generalFunctions/audioStream.dart';
+import 'package:my_music_app/generalFunctions/navigationBarChange.dart';
+import 'package:my_music_app/isarDatabase/databaseHelper/song.dart';
+import 'package:provider/provider.dart';
 import 'package:searchfield/searchfield.dart';
+import '../isarDatabase/databaseHelper/isarDatabaseHelper.dart';
 
 class SongsSearchBar extends StatefulWidget {
+  List<SongData> songsData = [];
+  List<String> songsName = [];
   final TextEditingController searchTextController = TextEditingController();
 
   SongsSearchBar({
@@ -14,8 +23,6 @@ class SongsSearchBar extends StatefulWidget {
 }
 
 class _SongsSearchBarState extends State<SongsSearchBar> {
-  List<int> allSongList = [];
-
   @override
   void initState() {
     super.initState();
@@ -32,6 +39,36 @@ class _SongsSearchBarState extends State<SongsSearchBar> {
 
   @override
   Widget build(BuildContext context) {
+    final dataBaseHelperContext = Provider.of<DataBaseHelper>(context);
+    final navigationBarChangeInstance =
+        Provider.of<NavigationBarChange>(context);
+    // Determine the list of songs to display based on the current navigation bar index
+    List<SongData> songDataList = dataBaseHelperContext.songDataList;
+    List<SongData> favouriteSongDataList =
+        dataBaseHelperContext.favouriteSongDataList;
+    List<SongData> selectedPlayListSongsDataList =
+        dataBaseHelperContext.selectedPlayListSongsDataList;
+
+    if (navigationBarChangeInstance.navigationBarIndex == 1 ||
+        navigationBarChangeInstance.navigationBarIndex == 0) {
+      widget.songsData = songDataList;
+      for (var song in songDataList) {
+        widget.songsName.add(song.songTitle);
+      }
+    }
+    if (navigationBarChangeInstance.navigationBarIndex == 2) {
+      for (var song in favouriteSongDataList) {
+        widget.songsData = favouriteSongDataList;
+        widget.songsName.add(song.songTitle);
+      }
+    }
+    if (navigationBarChangeInstance.navigationBarIndex == 3) {
+      for (var song in selectedPlayListSongsDataList) {
+        widget.songsData = selectedPlayListSongsDataList;
+        widget.songsName.add(song.songTitle);
+      }
+    }
+
     return Padding(
       padding: const EdgeInsets.only(left: 0),
       child: Container(
@@ -51,10 +88,12 @@ class _SongsSearchBarState extends State<SongsSearchBar> {
         child: SearchField(
           controller: widget.searchTextController,
           onSuggestionTap: (value) {
+            debugPrint(value.searchKey);
+            _songPalyAndPause(value.searchKey);
             widget.searchTextController.clear();
           },
           autovalidateMode: AutovalidateMode.onUserInteraction,
-          suggestions: allSongList
+          suggestions: widget.songsName
               .map((songName) => SearchFieldListItem(songName.toString()))
               .toList(),
           suggestionState: Suggestion.hidden,
@@ -136,5 +175,27 @@ class _SongsSearchBarState extends State<SongsSearchBar> {
         ),
       ),
     );
+  }
+
+  void _songPalyAndPause(String selectedSongName) {
+    SongData? selectedSong;
+
+    for (var songdata in widget.songsData) {
+      if (songdata.songTitle == selectedSongName) {
+        selectedSong = songdata;
+      }
+    }
+
+    if (selectedSong != null) {
+      context.read<AudiostreamFunctions>().setAudioData(selectedSong);
+
+      context.read<NavigationBarChange>().setAudioTrayersAreVisible();
+
+      context.read<NavigationBarChange>().setplayListNamgechange(true);
+
+      context.read<DataBaseHelper>().songPalyAndPause(selectedSong.songId);
+
+      context.read<AudiostreamFunctions>().playMusic();
+    }
   }
 }

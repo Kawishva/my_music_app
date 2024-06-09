@@ -117,26 +117,35 @@ class DataBaseHelper extends ChangeNotifier {
   }
 
   /// Fetches all song data from the database and updates the local list.
+  /// Fetches all song data from the database and updates the local list.
   Future<void> fetchSongDataFromDataBase() async {
     final songDataListFromDataBase =
         await isarDBInstance.allSongs.where().findAll();
 
-    for (var songData in songDataList) {
-      if (!songDataListFromDataBase
-          .any((songDatafromDB) => songDatafromDB.songId == songData.songId)) {
-        await isarDBInstance.writeTxn(() async {
+    // Create a set of song IDs from the local list for fast lookup
+    final localSongIds = songDataList.map((song) => song.songId).toSet();
+
+    // Create a set of song IDs from the database list for fast lookup
+    final dbSongIds =
+        songDataListFromDataBase.map((song) => song.songId).toSet();
+
+    // Remove songs from the local list if they are not in the database
+    songDataList.removeWhere((song) {
+      final shouldRemove = !dbSongIds.contains(song.songId);
+      if (shouldRemove) {
+        isarDBInstance.writeTxn(() async {
           await isarDBInstance.allSongs
               .filter()
-              .songIdEqualTo(songData.songId)
+              .songIdEqualTo(song.songId)
               .deleteAll();
         });
-
-        songDataList.remove(songData);
       }
-    }
+      return shouldRemove;
+    });
 
+    // Add songs to the local list if they are in the database but not in the local list
     for (var songDatafromDB in songDataListFromDataBase) {
-      if (!songDataList.any((song) => song.songId == songDatafromDB.songId)) {
+      if (!localSongIds.contains(songDatafromDB.songId)) {
         String? title;
         String? trackArtist;
         List<Picture>? pictures;
@@ -156,13 +165,14 @@ class DataBaseHelper extends ChangeNotifier {
         }
 
         songDataList.add(SongData(
-            songDatafromDB.songId,
-            title ?? "no name",
-            trackArtist ?? "no name",
-            pictures?.first.bytes ?? Uint8List(0),
-            songDatafromDB.songPath.toString(),
-            songDatafromDB.songIsPlaying,
-            songDatafromDB.songIsMyFavourite));
+          songDatafromDB.songId,
+          title ?? "no name",
+          trackArtist ?? "no name",
+          pictures?.first.bytes ?? Uint8List(0),
+          songDatafromDB.songPath.toString(),
+          songDatafromDB.songIsPlaying,
+          songDatafromDB.songIsMyFavourite,
+        ));
       }
     }
 

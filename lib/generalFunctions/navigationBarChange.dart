@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 class NavigationBarChange extends ChangeNotifier {
-  int navigationBarIndex = 0;
+  int navigationBarIndex = 1;
   int playListviewSelectedIndex = -1;
   bool screenIsAllSongsScreen = false;
   bool audioTrayersAreVisible = false;

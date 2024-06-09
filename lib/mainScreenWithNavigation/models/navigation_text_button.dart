@@ -27,7 +27,7 @@ class NavigationTextButton extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Container(
-          width: 100,
+          width: 120,
           alignment: Alignment.centerLeft,
           child: TextButton(
             onPressed: buttonOnPressed,

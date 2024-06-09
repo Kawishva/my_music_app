@@ -69,7 +69,7 @@ class _NavigationBarHolderState extends State<NavigationBarHolder> {
                 ),
               ),
               // Explore Button
-              NavigationTextButton(
+              /*  NavigationTextButton(
                 buttonBoxShadow: [
                   navigationBarChangeInstance.navigationIndex == 0
                       ? const BoxShadow(
@@ -86,7 +86,7 @@ class _NavigationBarHolderState extends State<NavigationBarHolder> {
                         ),
                 ],
                 buttonOnPressed: () =>
-                    _navigationBarIndexChangeFunction(0, -1, 0, "EXPLORE"),
+                    _navigationBarIndexChangeFunction(1, -1, 0, "EXPLORE"),
                 buttonColor: navigationBarChangeInstance.navigationIndex == 0
                     ? const Color(0xFF44C7FF)
                     : Colors.transparent,
@@ -94,7 +94,7 @@ class _NavigationBarHolderState extends State<NavigationBarHolder> {
                 buttonFontSize: 14,
                 buttonLetterSpacing: 3,
                 fontWeight: FontWeight.bold,
-              ),
+              ),*/
               // Library Label
               Padding(
                 padding: const EdgeInsets.only(right: 37, top: 20),
@@ -102,9 +102,9 @@ class _NavigationBarHolderState extends State<NavigationBarHolder> {
                   "LIBRARY",
                   style: GoogleFonts.alatsi(
                     color: Colors.white,
-                    letterSpacing: 3,
+                    letterSpacing: 5,
                     fontWeight: FontWeight.bold,
-                    fontSize: 14,
+                    fontSize: 20,
                   ),
                 ),
               ),
@@ -133,7 +133,7 @@ class _NavigationBarHolderState extends State<NavigationBarHolder> {
                       ? const Color(0xFF44C7FF)
                       : Colors.transparent,
                   buttonName: "All songs",
-                  buttonFontSize: 12,
+                  buttonFontSize: 15,
                   buttonLetterSpacing: 1,
                   fontWeight: FontWeight.normal,
                 ),
@@ -163,7 +163,7 @@ class _NavigationBarHolderState extends State<NavigationBarHolder> {
                       ? const Color(0xFF44C7FF)
                       : Colors.transparent,
                   buttonName: "Favourites",
-                  buttonFontSize: 12,
+                  buttonFontSize: 15,
                   buttonLetterSpacing: 1,
                   fontWeight: FontWeight.normal,
                 ),
@@ -179,9 +179,9 @@ class _NavigationBarHolderState extends State<NavigationBarHolder> {
                       "PLAYLISTS",
                       style: GoogleFonts.alatsi(
                         color: Colors.white,
-                        letterSpacing: 3,
+                        letterSpacing: 5,
                         fontWeight: FontWeight.bold,
-                        fontSize: 14,
+                        fontSize: 20,
                       ),
                     ),
                     Builder(builder: (context) {

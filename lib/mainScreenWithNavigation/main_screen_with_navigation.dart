@@ -12,7 +12,6 @@ import '../generalFunctions/navigationBarChange.dart';
 import '../isarDatabase/databaseHelper/song.dart';
 import 'audioTrayLarge.dart';
 import 'models/audioButtons.dart';
-import 'screens/exploreScreen/mainScreenHolder.dart';
 import 'screens/playlistsScreens/playListsScreen.dart';
 
 class MainScreenWithNavigation extends StatefulWidget {
@@ -90,10 +89,10 @@ class _SplashScreenState extends State<MainScreenWithNavigation> {
                                         _onFolderPathPickFunction();
                                       }
                                     },
-                                    buttonIcon: navigationBarChangeInstance
-                                            .isAllSongsScreen
-                                        ? Bootstrap.plus_circle
-                                        : null,
+                                    buttonIcon: /* navigationBarChangeInstance
+                                            .isAllSongsScreen*/
+                                        Bootstrap.plus_circle,
+                                    //* : null,*/,
                                     buttonWidth: 30,
                                     buttonHeight: 30,
                                     buttonIconSize: 20,
@@ -122,9 +121,6 @@ class _SplashScreenState extends State<MainScreenWithNavigation> {
                                 alignment: AlignmentDirectional.center,
                                 duration: Duration.zero,
                                 children: [
-                                  Center(
-                                    child: MainScreenHolder(),
-                                  ),
                                   Center(child: PlayListsScreens()),
                                   Center(
                                     child: PlayListsScreens(),
