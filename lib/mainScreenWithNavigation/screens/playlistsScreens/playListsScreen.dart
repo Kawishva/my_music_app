@@ -111,13 +111,7 @@ class _PlayListsScreensState extends State<PlayListsScreens> {
                                 height: 60,
                                 child: IconButton(
                                     onPressed: () => _songPalyAndPause(
-                                        widget.songsData[index],
-                                        index != widget.songsData.length - 1
-                                            ? widget.songsData[index + 1]
-                                            : widget.songsData.first,
-                                        index != 0
-                                            ? widget.songsData[index - 1]
-                                            : widget.songsData.last),
+                                        widget.songsData[index]),
                                     icon: Icon(
                                       widget.songsData[index].songIsPlaying
                                           ? Bootstrap.pause_circle_fill
@@ -287,14 +281,16 @@ class _PlayListsScreensState extends State<PlayListsScreens> {
   }
 
   /// Toggles play/pause state of a song.
-  void _songPalyAndPause(
-      SongData selectedSong, SongData nextSong, SongData previusSong) {
-    context
-        .read<AudiostreamFunctions>()
-        .setAudioData(selectedSong, nextSong, previusSong);
+  void _songPalyAndPause(SongData selectedSong) {
+    context.read<AudiostreamFunctions>().setAudioData(selectedSong);
+
     context.read<NavigationBarChange>().setAudioTrayersAreVisible();
+
     context.read<NavigationBarChange>().setplayListNamgechange(true);
+
     context.read<DataBaseHelper>().songPalyAndPause(selectedSong.songId);
+
+    context.read<AudiostreamFunctions>().playMusic();
   }
 
   /// Displays a popup window for playlist selection.

@@ -180,11 +180,8 @@ class _SplashScreenState extends State<MainScreenWithNavigation> {
 
     if (selectedAudio == null) {
       SongData fisrtSong = context.read<DataBaseHelper>().songDataList.first;
-      SongData nextSong = context.read<DataBaseHelper>().songDataList[1];
-      SongData lastSong = context.read<DataBaseHelper>().songDataList.last;
-      context
-          .read<AudiostreamFunctions>()
-          .setAudioData(fisrtSong, nextSong, lastSong);
+
+      context.read<AudiostreamFunctions>().setAudioData(fisrtSong);
     }
 
     context.read<NavigationBarChange>().onAudioTrayCloseFuntion();

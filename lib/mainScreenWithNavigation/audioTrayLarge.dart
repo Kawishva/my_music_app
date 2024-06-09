@@ -10,6 +10,7 @@ import '../isarDatabase/databaseHelper/isarDatabaseHelper.dart';
 import '../isarDatabase/databaseHelper/song.dart';
 import 'models/audioButtons.dart';
 import 'models/playListsSelectionPopUpWindow.dart';
+import 'models/volumeSlider.dart';
 
 class AudioTrayLarge extends StatefulWidget {
   final Function() onAudioTrayMinimizingFuntion, onAudioTrayCloseFuntion;
@@ -35,6 +36,7 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
     reedSongs();
     readPlaylist();
     readFavourite();
+    _changeToNextSongCurrentSongEnds();
     widget.playListName = "";
     widget.songsData.clear();
     widget.songsData.clear();
@@ -243,10 +245,10 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
               ),
               // Progress bar
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
+                padding: const EdgeInsets.symmetric(horizontal: 5),
                 child: ProgressBar(
-                  progress: Duration(seconds: 3),
-                  total: Duration(minutes: 1),
+                  progress: audioStreamInstance.getCurrentDureation,
+                  total: audioStreamInstance.getsongTotalDuration,
                   barCapShape: BarCapShape.round,
                   progressBarColor: Colors.white,
                   baseBarColor: Colors.white.withOpacity(0.24),
@@ -254,7 +256,7 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
                   thumbColor: Colors.white,
                   barHeight: 4,
                   thumbGlowRadius: 0,
-                  thumbRadius: 5.0,
+                  thumbRadius: 4,
                   timeLabelLocation: TimeLabelLocation.sides,
                   timeLabelTextStyle: GoogleFonts.alatsi(
                     color: Colors.white,
@@ -263,7 +265,7 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
                     fontSize: 9,
                   ),
                   onSeek: (duration) {
-                    // Handle seek action here, if needed
+                    audioStreamInstance.seek(duration);
                   },
                 ),
               ),
@@ -290,10 +292,8 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
                           buttonIconSize: 18,
                           buttonBorderRadiusSize: 8),
                       AudioButtons(
-                          onButtonPressed: () => _songPalyAndPause(
-                              widget.selectedAudio!,
-                              widget.selectedAudio!,
-                              widget.selectedAudio!),
+                          onButtonPressed: () =>
+                              _songPalyAndPause(widget.selectedAudio!),
                           buttonIcon: widget.selectedAudio!.songIsPlaying
                               ? Bootstrap.pause_circle_fill
                               : Bootstrap.play_circle_fill,
@@ -308,13 +308,15 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
                           buttonHeight: 30,
                           buttonIconSize: 18,
                           buttonBorderRadiusSize: 8),
-                      AudioButtons(
-                          onButtonPressed: () {},
-                          buttonIcon: Bootstrap.volume_up,
-                          buttonWidth: 30,
-                          buttonHeight: 30,
-                          buttonIconSize: 18,
-                          buttonBorderRadiusSize: 8),
+                      Builder(builder: (context) {
+                        return AudioButtons(
+                            onButtonPressed: () => _changeVolume(context),
+                            buttonIcon: Bootstrap.volume_up,
+                            buttonWidth: 30,
+                            buttonHeight: 30,
+                            buttonIconSize: 18,
+                            buttonBorderRadiusSize: 8);
+                      }),
                     ],
                   ),
                 ),
@@ -355,13 +357,7 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
                                       vertical: 2, horizontal: 6),
                                   child: ElevatedButton(
                                     onPressed: () => _songPalyAndPause(
-                                        widget.songsData[index],
-                                        index != widget.songsData.length - 1
-                                            ? widget.songsData[index + 1]
-                                            : widget.songsData.first,
-                                        index != 0
-                                            ? widget.songsData[index - 1]
-                                            : widget.songsData.last),
+                                        widget.songsData[index]),
                                     style: ButtonStyle(
                                         padding: WidgetStateProperty.all(
                                             EdgeInsets.symmetric(
@@ -520,87 +516,67 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
             ));
   }
 
-  void _songPalyAndPause(
-      SongData selectedSong, SongData nextSong, SongData previusSong) {
-    context
-        .read<AudiostreamFunctions>()
-        .setAudioData(selectedSong, nextSong, previusSong);
+  void _songPalyAndPause(SongData selectedSong) {
     context.read<DataBaseHelper>().songPalyAndPause(selectedSong.songId);
+    context.read<AudiostreamFunctions>().setAudioData(selectedSong);
+    context.read<AudiostreamFunctions>().songPlayPause();
   }
 
   void _playNextSong() {
     final audioStreamInstance = context.read<AudiostreamFunctions>();
-    SongData? nextSong = audioStreamInstance.getPreviousSongData;
-    SongData? selectedSong = audioStreamInstance.getNextSongData;
-    SongData? previusSong = audioStreamInstance.getSelectedSongData;
 
-    if (nextSong != selectedSong &&
-        selectedSong != previusSong &&
-        nextSong != previusSong) {
-      for (int i = 0; i < widget.songsData.length; i++) {
-        if (widget.songsData[i] == selectedSong) {
-          if (widget.songsData.length == i + 1) {
-            nextSong = widget.songsData.first;
-          } else {
-            nextSong = widget.songsData[i + 1];
-          }
-          break;
+    SongData? currentSong = audioStreamInstance.getSelectedSongData;
+
+    for (int i = 0; i < widget.songsData.length; i++) {
+      if (widget.songsData[i] == currentSong) {
+        if (widget.songsData.length == i + 1) {
+          currentSong = widget.songsData.first;
+        } else {
+          currentSong = widget.songsData[i + 1];
         }
+        break;
       }
     }
-    context.read<DataBaseHelper>().songPalyAndPause(selectedSong!.songId);
-    audioStreamInstance.setAudioData(selectedSong, nextSong!, previusSong!);
+
+    context.read<DataBaseHelper>().songPalyAndPause(currentSong!.songId);
+    audioStreamInstance.setAudioData(currentSong);
+    context.read<AudiostreamFunctions>().playMusic();
   }
 
   void _shuffleSongsList() {
     context.read<DataBaseHelper>().shuffleSongs();
-
-    final audioStreamInstance = context.read<AudiostreamFunctions>();
-    SongData? previusSong = audioStreamInstance.getPreviousSongData;
-    SongData? selectedSong = audioStreamInstance.getSelectedSongData;
-    SongData? nextSong = audioStreamInstance.getNextSongData;
-
-    for (int i = 0; i < widget.songsData.length; i++) {
-      if (widget.songsData[i] == selectedSong) {
-        if (i == 0) {
-          previusSong = widget.songsData.last;
-          nextSong = widget.songsData[i + 1];
-          break;
-        }
-        if (widget.songsData.length == i + 1) {
-          previusSong = widget.songsData[i - 1];
-          nextSong = widget.songsData.first;
-          break;
-        } else {
-          previusSong = widget.songsData[i - 1];
-          nextSong = widget.songsData[i + 1];
-        }
-      }
-    }
-    audioStreamInstance.setAudioData(selectedSong!, nextSong!, previusSong!);
   }
 
   void _playPreviousSong() {
     final audioStreamInstance = context.read<AudiostreamFunctions>();
-    SongData? previusSong = audioStreamInstance.getNextSongData;
-    SongData? selectedSong = audioStreamInstance.getPreviousSongData;
-    SongData? nextSong = audioStreamInstance.getSelectedSongData;
 
-    if (nextSong != selectedSong &&
-        selectedSong != previusSong &&
-        nextSong != previusSong) {
-      for (int i = 0; i < widget.songsData.length; i++) {
-        if (widget.songsData[i] == selectedSong) {
-          if (i == 0) {
-            previusSong = widget.songsData.last;
-          } else {
-            previusSong = widget.songsData[i - 1];
-          }
-          break;
+    SongData? currentSong = audioStreamInstance.getSelectedSongData;
+
+    for (int i = 0; i < widget.songsData.length; i++) {
+      if (widget.songsData[i] == currentSong) {
+        if (i == 0) {
+          currentSong = widget.songsData.last;
+        } else {
+          currentSong = widget.songsData[i - 1];
         }
+        break;
       }
     }
-    context.read<DataBaseHelper>().songPalyAndPause(selectedSong!.songId);
-    audioStreamInstance.setAudioData(selectedSong, nextSong!, previusSong!);
+    context.read<DataBaseHelper>().songPalyAndPause(currentSong!.songId);
+    audioStreamInstance.setAudioData(currentSong);
+    context.read<AudiostreamFunctions>().playMusic();
+  }
+
+  void _changeVolume(BuildContext newContext) {
+    showDialog(context: newContext, builder: (context) => VolumePopUpSlider());
+  }
+
+  void _changeToNextSongCurrentSongEnds() {
+    final audioStreamInstance = context.read<AudiostreamFunctions>();
+
+    if (audioStreamInstance.getCurrentDureation ==
+        audioStreamInstance.getsongTotalDuration) {
+      audioStreamInstance.playMusic();
+    }
   }
 }
