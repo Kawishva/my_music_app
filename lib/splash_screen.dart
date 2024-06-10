@@ -24,7 +24,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
   // Fetch all songs data from the database
   void reedSongs() {
-    context.read<DataBaseHelper>().fetchSongDataFromDataBase();
+    context.read<DataBaseHelper>().fetchSongAtStartUp();
   }
 
   // Fetch all playlists data from the database

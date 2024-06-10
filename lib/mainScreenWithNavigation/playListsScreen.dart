@@ -3,14 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:icons_plus/icons_plus.dart';
 import 'package:provider/provider.dart';
-import '../../../generalFunctions/audioStream.dart';
-import '../../../generalFunctions/navigationBarChange.dart';
-import '../../../isarDatabase/databaseHelper/isarDatabaseHelper.dart';
-import '../../../isarDatabase/databaseHelper/song.dart';
-import '../../models/playListsSelectionPopUpWindow.dart';
+import '../generalFunctions/audioStream.dart';
+import '../generalFunctions/navigationBarChange.dart';
+import '../isarDatabase/databaseHelper/isarDatabaseHelper.dart';
+import '../isarDatabase/databaseHelper/song.dart';
+import 'models/playListsSelectionPopUpWindow.dart';
 
 class PlayListsScreens extends StatefulWidget {
-  List<SongData> songsData = [];
+  List<SongDataClass> songsData = [];
 
   PlayListsScreens({
     super.key,
@@ -25,7 +25,6 @@ class _PlayListsScreensState extends State<PlayListsScreens> {
   void initState() {
     // Initialize state by fetching data from the database
     widget.songsData.clear();
-    reedSongs();
     readPlaylist();
     readFavourite();
     super.initState();
@@ -38,25 +37,21 @@ class _PlayListsScreensState extends State<PlayListsScreens> {
         Provider.of<NavigationBarChange>(context);
 
     // Determine the list of songs to display based on the current navigation bar index
-    List<SongData> songDataList = dataBaseHelperContext.songDataList;
-    List<SongData> favouriteSongDataList =
+    List<SongDataClass> songDataList = dataBaseHelperContext.songDataList;
+    List<SongDataClass> favouriteSongDataList =
         dataBaseHelperContext.favouriteSongDataList;
-    List<SongData> selectedPlayListSongsDataList =
+    List<SongDataClass> selectedPlayListSongsDataList =
         dataBaseHelperContext.selectedPlayListSongsDataList;
 
-    if (navigationBarChangeInstance.navigationBarIndex == 1) {
-      widget.songsData.cast();
+    if (navigationBarChangeInstance.navigationBarIndex == 0) {
       widget.songsData = songDataList;
     }
-    if (navigationBarChangeInstance.navigationBarIndex == 2) {
-      widget.songsData.cast();
+    if (navigationBarChangeInstance.navigationBarIndex == 1) {
       widget.songsData = favouriteSongDataList;
     }
-    if (navigationBarChangeInstance.navigationBarIndex == 3) {
-      widget.songsData.cast();
+    if (navigationBarChangeInstance.navigationBarIndex == 2) {
       widget.songsData = selectedPlayListSongsDataList;
     }
-
     return Container(
         child: GridView.builder(
             primary: true,
@@ -151,8 +146,8 @@ class _PlayListsScreensState extends State<PlayListsScreens> {
                                         child: IconButton(
                                           onPressed: () =>
                                               _addOrRemoveSongFromFavourite(
-                                                  widget
-                                                      .songsData[index].songId),
+                                                  widget.songsData[index]
+                                                      .songTitle),
                                           style: ButtonStyle(
                                               padding: WidgetStateProperty.all(
                                                   EdgeInsets.zero),
@@ -191,7 +186,8 @@ class _PlayListsScreensState extends State<PlayListsScreens> {
                                         child: IconButton(
                                           onPressed: () => _onCreatePopUpWindow(
                                               context,
-                                              widget.songsData[index].songId),
+                                              widget
+                                                  .songsData[index].songTitle),
                                           style: ButtonStyle(
                                               padding: WidgetStateProperty.all(
                                                   EdgeInsets.zero),
@@ -260,11 +256,6 @@ class _PlayListsScreensState extends State<PlayListsScreens> {
             }));
   }
 
-  // Fetch all songs data from the database
-  void reedSongs() {
-    context.read<DataBaseHelper>().fetchSongDataFromDataBase();
-  }
-
   // Fetch all playlists data from the database
   void readPlaylist() {
     context.read<DataBaseHelper>().fetchAllPlayListsDataFromDataBase();
@@ -276,32 +267,31 @@ class _PlayListsScreensState extends State<PlayListsScreens> {
   }
 
   /// Adds or removes a song from the favourites list.
-  void _addOrRemoveSongFromFavourite(int songId) {
-    context.read<DataBaseHelper>().addOrRemoveSongFromFavourite(songId);
+  void _addOrRemoveSongFromFavourite(String songTitle) {
+    context.read<DataBaseHelper>().addOrRemoveSongFromFavourite(songTitle);
   }
 
   /// Toggles play/pause state of a song.
-  void _songPalyAndPause(SongData selectedSong) {
-    context.read<AudiostreamFunctions>().setAudioData(selectedSong);
+  void _songPalyAndPause(SongDataClass selectedSong) {
+    context
+        .read<AudiostreamFunctions>()
+        .setAudioData(selectedSong, widget.songsData);
 
     context.read<NavigationBarChange>().setAudioTrayersAreVisible();
 
     context.read<NavigationBarChange>().setplayListNamgechange(true);
 
-    context.read<DataBaseHelper>().songPalyAndPause(selectedSong.songId);
+    context.read<DataBaseHelper>().setSongPlayAndPause(selectedSong);
 
     context.read<AudiostreamFunctions>().playMusic();
   }
 
   /// Displays a popup window for playlist selection.
-  void _onCreatePopUpWindow(BuildContext newContext, int songId) {
+  void _onCreatePopUpWindow(BuildContext newContext, String songTitle) {
     context
         .read<DataBaseHelper>()
-        .temporyPlayListLibraryForSelectedSong(songId);
+        .fetchTemporyPlayListLibraryForSelectedSong(songTitle);
     showDialog(
-        context: newContext,
-        builder: (context) => PlayListPopUpWindow(
-              songId: songId,
-            ));
+        context: newContext, builder: (context) => PlayListPopUpWindow());
   }
 }

@@ -10,7 +10,7 @@ import 'package:searchfield/searchfield.dart';
 import '../isarDatabase/databaseHelper/isarDatabaseHelper.dart';
 
 class SongsSearchBar extends StatefulWidget {
-  List<SongData> songsData = [];
+  List<SongDataClass> songsData = [];
   List<String> songsName = [];
   final TextEditingController searchTextController = TextEditingController();
 
@@ -43,10 +43,10 @@ class _SongsSearchBarState extends State<SongsSearchBar> {
     final navigationBarChangeInstance =
         Provider.of<NavigationBarChange>(context);
     // Determine the list of songs to display based on the current navigation bar index
-    List<SongData> songDataList = dataBaseHelperContext.songDataList;
-    List<SongData> favouriteSongDataList =
+    List<SongDataClass> songDataList = dataBaseHelperContext.songDataList;
+    List<SongDataClass> favouriteSongDataList =
         dataBaseHelperContext.favouriteSongDataList;
-    List<SongData> selectedPlayListSongsDataList =
+    List<SongDataClass> selectedPlayListSongsDataList =
         dataBaseHelperContext.selectedPlayListSongsDataList;
 
     if (navigationBarChangeInstance.navigationBarIndex == 1 ||
@@ -178,7 +178,7 @@ class _SongsSearchBarState extends State<SongsSearchBar> {
   }
 
   void _songPalyAndPause(String selectedSongName) {
-    SongData? selectedSong;
+    SongDataClass? selectedSong;
 
     for (var songdata in widget.songsData) {
       if (songdata.songTitle == selectedSongName) {
@@ -187,13 +187,13 @@ class _SongsSearchBarState extends State<SongsSearchBar> {
     }
 
     if (selectedSong != null) {
-      context.read<AudiostreamFunctions>().setAudioData(selectedSong);
+      context
+          .read<AudiostreamFunctions>()
+          .setAudioData(selectedSong, widget.songsData);
 
       context.read<NavigationBarChange>().setAudioTrayersAreVisible();
 
-      context.read<NavigationBarChange>().setplayListNamgechange(true);
-
-      context.read<DataBaseHelper>().songPalyAndPause(selectedSong.songId);
+      context.read<DataBaseHelper>().setSongPlayAndPause(selectedSong);
 
       context.read<AudiostreamFunctions>().playMusic();
     }

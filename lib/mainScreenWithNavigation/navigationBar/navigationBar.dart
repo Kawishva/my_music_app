@@ -33,7 +33,7 @@ class _NavigationBarHolderState extends State<NavigationBarHolder> {
     final dataBaseHelperContext = Provider.of<DataBaseHelper>(context);
     final navigationBarChangeInstance =
         Provider.of<NavigationBarChange>(context);
-    List<PlayListData> playListDataList =
+    List<PlayListClass> playListDataList =
         dataBaseHelperContext.playListDataList;
 
     return Container(
@@ -113,6 +113,36 @@ class _NavigationBarHolderState extends State<NavigationBarHolder> {
                 padding: const EdgeInsets.only(left: 5, bottom: 0),
                 child: NavigationTextButton(
                   buttonBoxShadow: [
+                    navigationBarChangeInstance.navigationBarIndex == 0
+                        ? const BoxShadow(
+                            color: Color(0xFF44C7FF),
+                            spreadRadius: 3,
+                            blurRadius: 8,
+                            offset: Offset(0, 0), // changes position of shadow
+                          )
+                        : const BoxShadow(
+                            color: Colors.transparent,
+                            spreadRadius: 0,
+                            blurRadius: 0,
+                            offset: Offset(0, 0), // changes position of shadow
+                          ),
+                  ],
+                  buttonOnPressed: () =>
+                      _navigationBarIndexChangeFunction(0, -1, 0, "All songs"),
+                  buttonColor: navigationBarChangeInstance.navigationIndex == 0
+                      ? const Color(0xFF44C7FF)
+                      : Colors.transparent,
+                  buttonName: "All songs",
+                  buttonFontSize: 15,
+                  buttonLetterSpacing: 1,
+                  fontWeight: FontWeight.normal,
+                ),
+              ),
+              // Favourites Button
+              Padding(
+                padding: const EdgeInsets.only(left: 4),
+                child: NavigationTextButton(
+                  buttonBoxShadow: [
                     navigationBarChangeInstance.navigationBarIndex == 1
                         ? const BoxShadow(
                             color: Color(0xFF44C7FF),
@@ -128,38 +158,8 @@ class _NavigationBarHolderState extends State<NavigationBarHolder> {
                           ),
                   ],
                   buttonOnPressed: () =>
-                      _navigationBarIndexChangeFunction(1, -1, 0, "All songs"),
+                      _navigationBarIndexChangeFunction(1, -1, 0, "Favourites"),
                   buttonColor: navigationBarChangeInstance.navigationIndex == 1
-                      ? const Color(0xFF44C7FF)
-                      : Colors.transparent,
-                  buttonName: "All songs",
-                  buttonFontSize: 15,
-                  buttonLetterSpacing: 1,
-                  fontWeight: FontWeight.normal,
-                ),
-              ),
-              // Favourites Button
-              Padding(
-                padding: const EdgeInsets.only(left: 4),
-                child: NavigationTextButton(
-                  buttonBoxShadow: [
-                    navigationBarChangeInstance.navigationBarIndex == 2
-                        ? const BoxShadow(
-                            color: Color(0xFF44C7FF),
-                            spreadRadius: 3,
-                            blurRadius: 8,
-                            offset: Offset(0, 0), // changes position of shadow
-                          )
-                        : const BoxShadow(
-                            color: Colors.transparent,
-                            spreadRadius: 0,
-                            blurRadius: 0,
-                            offset: Offset(0, 0), // changes position of shadow
-                          ),
-                  ],
-                  buttonOnPressed: () =>
-                      _navigationBarIndexChangeFunction(2, -1, 0, "Favourites"),
-                  buttonColor: navigationBarChangeInstance.navigationIndex == 2
                       ? const Color(0xFF44C7FF)
                       : Colors.transparent,
                   buttonName: "Favourites",
@@ -229,7 +229,7 @@ class _NavigationBarHolderState extends State<NavigationBarHolder> {
                         ],
                         buttonOnPressed: () =>
                             _navigationBarIndexChangeFunction(
-                                3,
+                                2,
                                 index,
                                 playListDataList[index].playListId,
                                 playListDataList[index].playListName),

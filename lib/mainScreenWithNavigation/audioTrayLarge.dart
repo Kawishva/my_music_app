@@ -1,5 +1,6 @@
 // ignore_for_file: must_be_immutable
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:icons_plus/icons_plus.dart';
@@ -14,8 +15,8 @@ import 'models/volumeSlider.dart';
 
 class AudioTrayLarge extends StatefulWidget {
   final Function() onAudioTrayMinimizingFuntion, onAudioTrayCloseFuntion;
-  List<SongData> songsData = [];
-  SongData? selectedAudio;
+  List<SongDataClass> songsData = [];
+  SongDataClass? selectedAudio;
   String playListName = "";
 
   AudioTrayLarge({
@@ -33,10 +34,8 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
 
   @override
   void initState() {
-    reedSongs();
     readPlaylist();
     readFavourite();
-    _changeToNextSongCurrentSongEnds();
     widget.playListName = "";
     widget.songsData.clear();
     widget.songsData.clear();
@@ -54,20 +53,19 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
     widget.selectedAudio = audioStreamInstance.getSelectedSongData;
 
     // Determine the list of songs to display based on the current navigation bar index
-    List<SongData> songDataList = dataBaseHelperContext.songDataList;
-    List<SongData> favouriteSongDataList =
+    List<SongDataClass> songDataList = dataBaseHelperContext.songDataList;
+    List<SongDataClass> favouriteSongDataList =
         dataBaseHelperContext.favouriteSongDataList;
-    List<SongData> selectedPlayListSongsDataList =
+    List<SongDataClass> selectedPlayListSongsDataList =
         dataBaseHelperContext.selectedPlayListSongsDataList;
 
-    if (navigationBarChangeInstance.navigationBarIndex == 1 ||
-        navigationBarChangeInstance.navigationBarIndex == 0) {
+    if (navigationBarChangeInstance.navigationBarIndex == 0) {
       widget.songsData = songDataList;
     }
-    if (navigationBarChangeInstance.navigationBarIndex == 2) {
+    if (navigationBarChangeInstance.navigationBarIndex == 1) {
       widget.songsData = favouriteSongDataList;
     }
-    if (navigationBarChangeInstance.navigationBarIndex == 3) {
+    if (navigationBarChangeInstance.navigationBarIndex == 2) {
       widget.songsData = selectedPlayListSongsDataList;
     }
 
@@ -187,7 +185,7 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
                   children: [
                     AudioButtons(
                       onButtonPressed: () => _addOrRemoveSongFromFavourite(
-                          widget.selectedAudio!.songId),
+                          widget.selectedAudio!.songTitle),
                       buttonIcon: widget.selectedAudio!.songIsMyFavourite
                           ? Bootstrap.heart_fill
                           : Bootstrap.heart,
@@ -232,7 +230,7 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
                     Builder(builder: (newContext) {
                       return AudioButtons(
                         onButtonPressed: () => _onCreatePopUpWindow(
-                            context, widget.selectedAudio!.songId),
+                            context, widget.selectedAudio!.songTitle),
                         buttonIcon: Bootstrap.three_dots_vertical,
                         buttonWidth: 25,
                         buttonHeight: 25,
@@ -294,7 +292,8 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
                       AudioButtons(
                           onButtonPressed: () =>
                               _songPalyAndPause(widget.selectedAudio!),
-                          buttonIcon: widget.selectedAudio!.songIsPlaying
+                          buttonIcon: audioStreamInstance.getPlayerState ==
+                                  PlayerState.playing
                               ? Bootstrap.pause_circle_fill
                               : Bootstrap.play_circle_fill,
                           buttonWidth: 40,
@@ -356,7 +355,7 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
                                   padding: const EdgeInsets.symmetric(
                                       vertical: 2, horizontal: 6),
                                   child: ElevatedButton(
-                                    onPressed: () => _songPalyAndPause(
+                                    onPressed: () => _playSlectedSong(
                                         widget.songsData[index]),
                                     style: ButtonStyle(
                                         padding: WidgetStateProperty.all(
@@ -484,11 +483,6 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
     );
   }
 
-  // Fetch all songs data from the database
-  void reedSongs() {
-    context.read<DataBaseHelper>().fetchSongDataFromDataBase();
-  }
-
   // Fetch all playlists data from the database
   void readPlaylist() {
     context.read<DataBaseHelper>().fetchAllPlayListsDataFromDataBase();
@@ -500,83 +494,48 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
   }
 
   /// Adds or removes a song from the favourites list.
-  void _addOrRemoveSongFromFavourite(int songId) {
-    context.read<DataBaseHelper>().addOrRemoveSongFromFavourite(songId);
+  void _addOrRemoveSongFromFavourite(String songTitle) {
+    context.read<DataBaseHelper>().addOrRemoveSongFromFavourite(songTitle);
   }
 
   // Displays a popup window for playlist selection.
-  void _onCreatePopUpWindow(BuildContext newContext, int songId) {
+  void _onCreatePopUpWindow(BuildContext newContext, String songTitle) {
     context
         .read<DataBaseHelper>()
-        .temporyPlayListLibraryForSelectedSong(songId);
+        .fetchTemporyPlayListLibraryForSelectedSong(songTitle);
     showDialog(
-        context: newContext,
-        builder: (context) => PlayListPopUpWindow(
-              songId: songId,
-            ));
+        context: newContext, builder: (context) => PlayListPopUpWindow());
   }
 
-  void _songPalyAndPause(SongData selectedSong) {
-    context.read<DataBaseHelper>().songPalyAndPause(selectedSong.songId);
-    context.read<AudiostreamFunctions>().setAudioData(selectedSong);
+  void _playSlectedSong(SongDataClass selectedSong) {
+    context
+        .read<AudiostreamFunctions>()
+        .setAudioData(selectedSong, widget.songsData);
+
+    context.read<AudiostreamFunctions>().playMusic();
+    context.read<DataBaseHelper>().setSongPlayAndPause(selectedSong);
+  }
+
+  void _songPalyAndPause(SongDataClass selectedSong) {
     context.read<AudiostreamFunctions>().songPlayPause();
+    context.read<DataBaseHelper>().setSongPlayAndPause(selectedSong);
   }
 
   void _playNextSong() {
-    final audioStreamInstance = context.read<AudiostreamFunctions>();
+    context.read<AudiostreamFunctions>().playNextSong();
+    context.read<DataBaseHelper>().setSongPlayAndPause(widget.selectedAudio!);
+  }
 
-    SongData? currentSong = audioStreamInstance.getSelectedSongData;
-
-    for (int i = 0; i < widget.songsData.length; i++) {
-      if (widget.songsData[i] == currentSong) {
-        if (widget.songsData.length == i + 1) {
-          currentSong = widget.songsData.first;
-        } else {
-          currentSong = widget.songsData[i + 1];
-        }
-        break;
-      }
-    }
-
-    context.read<DataBaseHelper>().songPalyAndPause(currentSong!.songId);
-    audioStreamInstance.setAudioData(currentSong);
-    context.read<AudiostreamFunctions>().playMusic();
+  void _playPreviousSong() {
+    context.read<AudiostreamFunctions>().playPreviousSong();
+    context.read<DataBaseHelper>().setSongPlayAndPause(widget.selectedAudio!);
   }
 
   void _shuffleSongsList() {
     context.read<DataBaseHelper>().shuffleSongs();
   }
 
-  void _playPreviousSong() {
-    final audioStreamInstance = context.read<AudiostreamFunctions>();
-
-    SongData? currentSong = audioStreamInstance.getSelectedSongData;
-
-    for (int i = 0; i < widget.songsData.length; i++) {
-      if (widget.songsData[i] == currentSong) {
-        if (i == 0) {
-          currentSong = widget.songsData.last;
-        } else {
-          currentSong = widget.songsData[i - 1];
-        }
-        break;
-      }
-    }
-    context.read<DataBaseHelper>().songPalyAndPause(currentSong!.songId);
-    audioStreamInstance.setAudioData(currentSong);
-    context.read<AudiostreamFunctions>().playMusic();
-  }
-
   void _changeVolume(BuildContext newContext) {
     showDialog(context: newContext, builder: (context) => VolumePopUpSlider());
-  }
-
-  void _changeToNextSongCurrentSongEnds() {
-    final audioStreamInstance = context.read<AudiostreamFunctions>();
-
-    if (audioStreamInstance.getCurrentDureation ==
-        audioStreamInstance.getsongTotalDuration) {
-      audioStreamInstance.playMusic();
-    }
   }
 }

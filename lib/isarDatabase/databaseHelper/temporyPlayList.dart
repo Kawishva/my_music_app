@@ -1,9 +1,9 @@
 class TemporyPlayList {
-  int songId;
+  String songTitle;
   int playListId;
   String playListName;
   bool songIsInPlayList;
 
-  TemporyPlayList(
-      this.songId, this.playListId, this.playListName, this.songIsInPlayList);
+  TemporyPlayList(this.songTitle, this.playListId, this.playListName,
+      this.songIsInPlayList);
 }

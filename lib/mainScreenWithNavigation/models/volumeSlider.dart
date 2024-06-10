@@ -4,6 +4,8 @@ import 'package:my_music_app/generalFunctions/audioStream.dart';
 import 'package:on_popup_window_widget/on_popup_window_widget.dart';
 import 'package:provider/provider.dart';
 
+import '../../generalFunctions/navigationBarChange.dart';
+
 class VolumePopUpSlider extends StatefulWidget {
   const VolumePopUpSlider({super.key});
 
@@ -15,6 +17,8 @@ class _VolumePopUpSliderState extends State<VolumePopUpSlider> {
   @override
   Widget build(BuildContext context) {
     final audioStreamInstance = Provider.of<AudiostreamFunctions>(context);
+    final navigationBarChangeInstance =
+        Provider.of<NavigationBarChange>(context);
 
     return Padding(
       padding: const EdgeInsets.only(left: 700),

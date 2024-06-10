@@ -1,7 +1,6 @@
 import 'dart:typed_data';
 
-class SongData {
-  int songId;
+class SongDataClass {
   String songTitle;
   String artistName;
   Uint8List imageByteArray;
@@ -9,6 +8,6 @@ class SongData {
   bool songIsPlaying;
   bool songIsMyFavourite;
 
-  SongData(this.songId, this.songTitle, this.artistName, this.imageByteArray,
+  SongDataClass(this.songTitle, this.artistName, this.imageByteArray,
       this.songPath, this.songIsPlaying, this.songIsMyFavourite);
 }

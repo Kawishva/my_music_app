@@ -12,7 +12,7 @@ import '../generalFunctions/navigationBarChange.dart';
 import '../isarDatabase/databaseHelper/song.dart';
 import 'audioTrayLarge.dart';
 import 'models/audioButtons.dart';
-import 'screens/playlistsScreens/playListsScreen.dart';
+import 'playListsScreen.dart';
 
 class MainScreenWithNavigation extends StatefulWidget {
   MainScreenWithNavigation({
@@ -89,10 +89,10 @@ class _SplashScreenState extends State<MainScreenWithNavigation> {
                                         _onFolderPathPickFunction();
                                       }
                                     },
-                                    buttonIcon: /* navigationBarChangeInstance
-                                            .isAllSongsScreen*/
-                                        Bootstrap.plus_circle,
-                                    //* : null,*/,
+                                    buttonIcon: navigationBarChangeInstance
+                                            .isAllSongsScreen
+                                        ? Bootstrap.plus_circle
+                                        : null,
                                     buttonWidth: 30,
                                     buttonHeight: 30,
                                     buttonIconSize: 20,
@@ -172,12 +172,19 @@ class _SplashScreenState extends State<MainScreenWithNavigation> {
   }
 
   void _onAudioTrayCloseFuntion() {
-    SongData? selectedAudio = context.read<AudiostreamFunctions>().selectedSong;
+    SongDataClass? selectedAudio =
+        context.read<AudiostreamFunctions>().selectedSong;
 
     if (selectedAudio == null) {
-      SongData fisrtSong = context.read<DataBaseHelper>().songDataList.first;
+      SongDataClass fisrtSong =
+          context.read<DataBaseHelper>().songDataList.first;
 
-      context.read<AudiostreamFunctions>().setAudioData(fisrtSong);
+      List<SongDataClass> songDataList =
+          context.read<DataBaseHelper>().songDataList;
+
+      context
+          .read<AudiostreamFunctions>()
+          .setAudioData(fisrtSong, songDataList);
     }
 
     context.read<NavigationBarChange>().onAudioTrayCloseFuntion();

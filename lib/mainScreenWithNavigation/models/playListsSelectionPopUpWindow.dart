@@ -6,10 +6,8 @@ import '../../isarDatabase/databaseHelper/isarDatabaseHelper.dart';
 import '../../isarDatabase/databaseHelper/temporyPlayList.dart';
 
 class PlayListPopUpWindow extends StatefulWidget {
-  final int songId;
   const PlayListPopUpWindow({
     super.key,
-    required this.songId,
   });
 
   @override
@@ -105,7 +103,7 @@ class _PlayListPopUpWindowState extends State<PlayListPopUpWindow> {
                                 temporyPlayListdataList[index]
                                     .songIsInPlayList = ticked ?? false;
                                 _addToPlayList(
-                                  temporyPlayListdataList[index].songId,
+                                  temporyPlayListdataList[index].songTitle,
                                   temporyPlayListdataList[index].playListId,
                                 );
                               }),
@@ -122,12 +120,10 @@ class _PlayListPopUpWindowState extends State<PlayListPopUpWindow> {
     context.read<DataBaseHelper>().fetchAllPlayListsDataFromDataBase();
   }
 
-  void _addToPlayList(int songId, int playListId) {
+  void _addToPlayList(String songTitle, int playListId) {
     final tempDatabaseInstance = context.read<DataBaseHelper>();
-
-    tempDatabaseInstance.fetchSongsListToSelectedPlayList(playListId);
-
     tempDatabaseInstance.addOrRemoveSelectedSongsToSelectedPlayList(
-        playListId, songId);
+        playListId, songTitle);
+    tempDatabaseInstance.fetchSongsListToSelectedPlayList(playListId);
   }
 }

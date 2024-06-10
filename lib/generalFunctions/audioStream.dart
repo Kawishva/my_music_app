@@ -7,12 +7,15 @@ class AudiostreamFunctions extends ChangeNotifier {
   final player = AudioPlayer();
   Duration songCurrentDuration = Duration.zero;
   Duration songTotalDuration = Duration.zero;
-  SongData? selectedSong;
+  SongDataClass? selectedSong;
+  List<SongDataClass> songDataList = [];
   double volume = 0.5;
+  PlayerState playerState = PlayerState.stopped;
 
-  void setAudioData(SongData selectedSong) {
+  void setAudioData(
+      SongDataClass selectedSong, List<SongDataClass> songDataList) {
     this.selectedSong = selectedSong;
-
+    this.songDataList = songDataList;
     notifyListeners();
   }
 
@@ -31,7 +34,13 @@ class AudiostreamFunctions extends ChangeNotifier {
 
     // Listen to when the song is completed
     player.onPlayerComplete.listen((event) {
-      // playNextSong(); is to play next song when current song is completed
+      playNextSong();
+    });
+
+    // Listen to player state changes
+    player.onPlayerStateChanged.listen((newState) {
+      playerState = newState;
+      notifyListeners();
     });
   }
 
@@ -41,24 +50,30 @@ class AudiostreamFunctions extends ChangeNotifier {
 
   void playMusic() async {
     await player.stop();
-    await player.play(DeviceFileSource(selectedSong!.songPath));
+    selectedSong!.songIsPlaying = true;
+    await player.play(DeviceFileSource(selectedSong!.songPath.toString()));
     await player.setVolume(volume); // Set the volume when playing
+    updateSongPlayState();
     notifyListeners();
   }
 
   void resumeSong() async {
     await player.resume();
+    selectedSong!.songIsPlaying = true;
+    updateSongPlayState();
     notifyListeners();
   }
 
   void pauseMusic() async {
     await player.pause();
+    selectedSong!.songIsPlaying = false;
+    updateSongPlayState();
     notifyListeners();
   }
 
   void songPlayPause() {
     if (selectedSong != null) {
-      if (selectedSong!.songIsPlaying) {
+      if (playerState == PlayerState.playing) {
         pauseMusic();
       } else {
         resumeSong();
@@ -76,9 +91,33 @@ class AudiostreamFunctions extends ChangeNotifier {
     await player.seek(position);
   }
 
+  void playNextSong() {
+    int currentIndex = songDataList.indexOf(selectedSong!);
+    int nextIndex = (currentIndex + 1) % songDataList.length;
+    selectedSong = songDataList[nextIndex];
+    playMusic();
+  }
+
+  void playPreviousSong() {
+    int currentIndex = songDataList.indexOf(selectedSong!);
+    int previousIndex =
+        (currentIndex - 1 + songDataList.length) % songDataList.length;
+    selectedSong = songDataList[previousIndex];
+    playMusic();
+  }
+
+  void updateSongPlayState() {
+    for (var song in songDataList) {
+      song.songIsPlaying =
+          song == selectedSong && playerState == PlayerState.playing;
+    }
+    notifyListeners();
+  }
+
   double get getVolume => volume;
-  SongData? get getSelectedSongData => this.selectedSong;
+  SongDataClass? get getSelectedSongData => this.selectedSong;
   Duration get getCurrentDureation => this.songCurrentDuration;
   Duration get getsongTotalDuration => this.songTotalDuration;
   Duration get getRemainingDuration => this.remainingDuration;
+  PlayerState get getPlayerState => this.playerState;
 }

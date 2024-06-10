@@ -1,7 +1,7 @@
-class PlayListData {
+class PlayListClass {
   int playListId;
   String playListName;
-  List<int> songsIdList;
+  List<String> songsTitle;
 
-  PlayListData(this.playListId, this.playListName, this.songsIdList);
+  PlayListClass(this.playListId, this.playListName, this.songsTitle);
 }

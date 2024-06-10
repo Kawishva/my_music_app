@@ -5,10 +5,9 @@ import 'package:audiotags/audiotags.dart';
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
-import '../mainDatabaseCtreation/all_songs.dart';
+import '../mainDatabaseCtreation/favorite_songs_list.dart';
 import '../mainDatabaseCtreation/imported_folders.dart';
-import '../mainDatabaseCtreation/play_lists.dart';
-import '../mainDatabaseCtreation/recent_songs.dart';
+import '../mainDatabaseCtreation/playlist_data.dart';
 import 'playlist.dart';
 import 'song.dart';
 import 'temporyPlayList.dart';
@@ -19,23 +18,18 @@ class DataBaseHelper extends ChangeNotifier {
   /// Initializes the database and sets all songs to not playing.
   static Future<void> databaseInitialize() async {
     final dir = await getApplicationSupportDirectory();
-    isarDBInstance = await Isar.open([
-      AllSongsSchema,
-      PlayListsSchema,
-      RecentSongsSchema,
-      ImportedFoldersSchema
-    ], directory: dir.path, inspector: true);
-
-    await setAllSongsToNotPlaying();
+    isarDBInstance = await Isar.open(
+        [FavouriteSongsDataSchema, PlayListsDataSchema, ImportedFoldersSchema],
+        directory: dir.path, inspector: true);
   }
 
   final List<TemporyPlayList> temporyPlayListdataList = [];
-  final List<SongData> songDataList = [];
-  final List<SongData> favouriteSongDataList = [];
-  final List<SongData> selectedPlayListSongsDataList = [];
-  final List<PlayListData> playListDataList = [];
+  final List<SongDataClass> songDataList = [];
+  final List<SongDataClass> favouriteSongDataList = [];
+  final List<SongDataClass> selectedPlayListSongsDataList = [];
+  final List<PlayListClass> playListDataList = [];
   final List<String> folderDirectoryPathList = [];
-  final List<int> recentSongsIdList = [];
+  //final List<int> recentSongsIdList = [];
 
   /// Handles the folder path selection and imports songs if available.
   Future<void> onFolderPathPick(String? directoryPath) async {
@@ -48,12 +42,34 @@ class DataBaseHelper extends ChangeNotifier {
           .map((item) => File(item.path))
           .toList();
 
-      if (importedSongsPathList.isNotEmpty) {
-        await saveFolderPathToDataBase(directoryPath);
-        await saveAllImportedSongPathsToDataBase(importedSongsPathList);
+      for (var songPath in importedSongsPathList) {
+        if (importedSongsPathList.isNotEmpty) {
+          String? title;
+          String? trackArtist;
+          List<Picture>? pictures;
+
+          Tag? tag = await AudioTags.read(songPath.path);
+          title = tag?.title;
+          trackArtist =
+              tag?.trackArtist; // Corrected from trackArtist to artist
+          pictures = tag?.pictures;
+
+          songDataList.add(SongDataClass(
+              title ?? "no name",
+              trackArtist ?? "no name",
+              pictures?.first.bytes ?? Uint8List(0),
+              songPath.toString(),
+              false,
+              false));
+
+          notifyListeners();
+          await saveFolderPathToDataBase(directoryPath);
+        } else {
+          debugPrint("no songs found!");
+        }
       }
     } else {
-      // User canceled the picker
+      debugPrint("file picker canceled");
       return;
     }
   }
@@ -72,8 +88,10 @@ class DataBaseHelper extends ChangeNotifier {
     if (!exists) {
       await isarDBInstance.writeTxn(() async {
         await isarDBInstance.importedFolders.put(newFolderPath);
+        debugPrint("folder path added to database");
       });
     }
+    notifyListeners();
   }
 
   /// Fetches all folder paths from the database.
@@ -91,102 +109,80 @@ class DataBaseHelper extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Saves all imported song paths to the database if they don't already exist.
-  Future<void> saveAllImportedSongPathsToDataBase(
-      List<File> importedSongsPathList) async {
-    final importedSongsPaths = importedSongsPathList
-        .map((file) => AllSongs()..songPath = file.path)
-        .toList();
+  Future<void> fetchSongAtStartUp() async {
+    final folderPathsDataFromDataBase =
+        await isarDBInstance.importedFolders.where().findAll();
+    final favouriteSongsTitles =
+        await isarDBInstance.favouriteSongsDatas.where().findAll();
 
-    final songsPathsFromDataBase =
-        await isarDBInstance.allSongs.where().findAll();
+    if (folderPathsDataFromDataBase.isNotEmpty) {
+      for (var directoryPath in folderPathsDataFromDataBase) {
+        final Directory dir =
+            Directory(directoryPath.importedFollderPath.toString());
 
-    for (var importedSong in importedSongsPaths) {
-      final exists = songsPathsFromDataBase.any(
-        (songDataFromDB) => songDataFromDB.songPath == importedSong.songPath,
-      );
+        final List<File> importedSongsPathList = dir
+            .listSync()
+            .where((item) => item.path.endsWith('.mp3'))
+            .map((item) => File(item.path))
+            .toList();
 
-      if (!exists) {
-        await isarDBInstance.writeTxn(() async {
-          await isarDBInstance.allSongs.put(importedSong);
-        });
-      }
-    }
+        for (var songPath in importedSongsPathList) {
+          String? title;
+          String? trackArtist;
+          List<Picture>? pictures;
 
-    await fetchSongDataFromDataBase();
-  }
+          Tag? tag = await AudioTags.read(songPath.path);
+          title = tag?.title;
+          trackArtist =
+              tag?.trackArtist; // Corrected from trackArtist to artist
+          pictures = tag?.pictures;
 
-  /// Fetches all song data from the database and updates the local list.
-  /// Fetches all song data from the database and updates the local list.
-  Future<void> fetchSongDataFromDataBase() async {
-    final songDataListFromDataBase =
-        await isarDBInstance.allSongs.where().findAll();
-
-    // Create a set of song IDs from the local list for fast lookup
-    final localSongIds = songDataList.map((song) => song.songId).toSet();
-
-    // Create a set of song IDs from the database list for fast lookup
-    final dbSongIds =
-        songDataListFromDataBase.map((song) => song.songId).toSet();
-
-    // Remove songs from the local list if they are not in the database
-    songDataList.removeWhere((song) {
-      final shouldRemove = !dbSongIds.contains(song.songId);
-      if (shouldRemove) {
-        isarDBInstance.writeTxn(() async {
-          await isarDBInstance.allSongs
-              .filter()
-              .songIdEqualTo(song.songId)
-              .deleteAll();
-        });
-      }
-      return shouldRemove;
-    });
-
-    // Add songs to the local list if they are in the database but not in the local list
-    for (var songDatafromDB in songDataListFromDataBase) {
-      if (!localSongIds.contains(songDatafromDB.songId)) {
-        String? title;
-        String? trackArtist;
-        List<Picture>? pictures;
-
-        try {
-          if (songDatafromDB.songPath != null &&
-              songDatafromDB.songPath!.isNotEmpty) {
-            Tag? tag = await AudioTags.read(songDatafromDB.songPath!);
-            title = tag?.title;
-            trackArtist =
-                tag?.trackArtist; // Corrected from trackArtist to artist
-            pictures = tag?.pictures;
+          if (favouriteSongsTitles.isNotEmpty) {
+            for (int i = 0; i < favouriteSongsTitles.length; i++) {
+              if (favouriteSongsTitles[i].songTitle == title) {
+                songDataList.add(SongDataClass(
+                    title ?? "no name",
+                    trackArtist ?? "no name",
+                    pictures?.first.bytes ?? Uint8List(0),
+                    songPath.path,
+                    false,
+                    true));
+              } else {
+                songDataList.add(SongDataClass(
+                    title ?? "no name",
+                    trackArtist ?? "no name",
+                    pictures?.first.bytes ?? Uint8List(0),
+                    songPath.path,
+                    false,
+                    false));
+              }
+            }
+          } else {
+            songDataList.add(SongDataClass(
+                title ?? "no name",
+                trackArtist ?? "no name",
+                pictures?.first.bytes ?? Uint8List(0),
+                songPath.path,
+                false,
+                false));
           }
-        } catch (e) {
-          // Handle the exception by logging or providing a default value
-          print("Error reading audio tags: $e");
         }
-
-        songDataList.add(SongData(
-          songDatafromDB.songId,
-          title ?? "no name",
-          trackArtist ?? "no name",
-          pictures?.first.bytes ?? Uint8List(0),
-          songDatafromDB.songPath.toString(),
-          songDatafromDB.songIsPlaying,
-          songDatafromDB.songIsMyFavourite,
-        ));
+        importedSongsPathList.clear();
+        notifyListeners();
       }
+    } else {
+      debugPrint("startup !");
     }
-
-    notifyListeners();
   }
 
   /// Saves a new playlist to the database.
   Future<void> saveNewPlayListToDataBase(String newPLayListName) async {
-    final newPlaylist = PlayLists()
+    final newPlaylist = PlayListsData()
       ..playListName = newPLayListName
-      ..songsIdList = [];
+      ..songsTitle = List.empty(growable: true);
 
     await isarDBInstance.writeTxn(() async {
-      await isarDBInstance.playLists.put(newPlaylist);
+      await isarDBInstance.playListsDatas.put(newPlaylist);
     });
     await fetchAllPlayListsDataFromDataBase();
   }
@@ -194,31 +190,32 @@ class DataBaseHelper extends ChangeNotifier {
   /// Fetches all playlists from the database.
   Future<void> fetchAllPlayListsDataFromDataBase() async {
     final playListDataListFromDataBase =
-        await isarDBInstance.playLists.where().findAll();
+        await isarDBInstance.playListsDatas.where().findAll();
 
     for (var playlistDataFromDB in playListDataListFromDataBase) {
       if (!playListDataList.any((playList) =>
           playList.playListName == playlistDataFromDB.playListName)) {
-        playListDataList.add(PlayListData(
+        playListDataList.add(PlayListClass(
             playlistDataFromDB.playListId,
             playlistDataFromDB.playListName.toString(),
-            playlistDataFromDB.songsIdList));
+            playlistDataFromDB.songsTitle));
       }
     }
     notifyListeners();
   }
 
-  Future<void> temporyPlayListLibraryForSelectedSong(int songId) async {
+  Future<void> fetchTemporyPlayListLibraryForSelectedSong(
+      String songTitle) async {
     temporyPlayListdataList.clear();
     final playListDataFromDataBase =
-        await isarDBInstance.playLists.where().findAll();
+        await isarDBInstance.playListsDatas.where().findAll();
 
     for (var playlistData in playListDataFromDataBase) {
-      if (playlistData.songsIdList.contains(songId)) {
-        temporyPlayListdataList.add(TemporyPlayList(
-            songId, playlistData.playListId, playlistData.playListName!, true));
+      if (playlistData.songsTitle.contains(songTitle)) {
+        temporyPlayListdataList.add(TemporyPlayList(songTitle,
+            playlistData.playListId, playlistData.playListName!, true));
       } else {
-        temporyPlayListdataList.add(TemporyPlayList(songId,
+        temporyPlayListdataList.add(TemporyPlayList(songTitle,
             playlistData.playListId, playlistData.playListName!, false));
       }
     }
@@ -226,26 +223,26 @@ class DataBaseHelper extends ChangeNotifier {
   }
 
   Future<void> addOrRemoveSelectedSongsToSelectedPlayList(
-      int playListId, int songId) async {
+      int playListId, String songTitle) async {
     final selectedPlayListInDataBase =
-        await isarDBInstance.playLists.get(playListId);
+        await isarDBInstance.playListsDatas.get(playListId);
 
     if (selectedPlayListInDataBase != null) {
-      if (!selectedPlayListInDataBase.songsIdList.contains(songId)) {
-        selectedPlayListInDataBase.songsIdList = List<int>.from(
-            selectedPlayListInDataBase.songsIdList); // Ensure it's growable
-        selectedPlayListInDataBase.songsIdList.add(songId);
+      if (!selectedPlayListInDataBase.songsTitle.contains(songTitle)) {
+        selectedPlayListInDataBase.songsTitle = List<String>.from(
+            selectedPlayListInDataBase.songsTitle); // Ensure it's growable
+        selectedPlayListInDataBase.songsTitle.add(songTitle);
 
         await isarDBInstance.writeTxn(() async {
-          await isarDBInstance.playLists.put(selectedPlayListInDataBase);
+          await isarDBInstance.playListsDatas.put(selectedPlayListInDataBase);
         });
       } else {
-        selectedPlayListInDataBase.songsIdList = List<int>.from(
-            selectedPlayListInDataBase.songsIdList); // Ensure it's growable
-        selectedPlayListInDataBase.songsIdList.remove(songId);
+        selectedPlayListInDataBase.songsTitle = List<String>.from(
+            selectedPlayListInDataBase.songsTitle); // Ensure it's growable
+        selectedPlayListInDataBase.songsTitle.remove(songTitle);
 
         await isarDBInstance.writeTxn(() async {
-          await isarDBInstance.playLists.put(selectedPlayListInDataBase);
+          await isarDBInstance.playListsDatas.put(selectedPlayListInDataBase);
         });
       }
     }
@@ -255,68 +252,86 @@ class DataBaseHelper extends ChangeNotifier {
 
   Future<void> fetchSongsListToSelectedPlayList(int playListId) async {
     selectedPlayListSongsDataList.clear(); // Clear existing data
-    //debugPrint(playListId.toString());
+    final favouriteSongsTitles =
+        await isarDBInstance.favouriteSongsDatas.where().findAll();
 
     final selectedPlayListInDataBase =
-        await isarDBInstance.playLists.get(playListId);
-    final songDataListFromDataBase =
-        await isarDBInstance.allSongs.where().findAll();
+        await isarDBInstance.playListsDatas.get(playListId);
 
     if (selectedPlayListInDataBase != null) {
-      for (var songId in selectedPlayListInDataBase.songsIdList) {
-        for (var songData in songDataListFromDataBase) {
-          if (songData.songId == songId) {
+      for (var songTitle in selectedPlayListInDataBase.songsTitle) {
+        for (var songData in songDataList) {
+          if (songData.songTitle == songTitle) {
             String? title;
             String? trackArtist;
             List<Picture>? pictures;
 
-            try {
-              if (songData.songPath != null && songData.songPath!.isNotEmpty) {
-                Tag? tag = await AudioTags.read(songData.songPath!);
-                title = tag?.title;
-                trackArtist = tag?.trackArtist;
-                pictures = tag?.pictures;
-              }
-            } catch (e) {
-              // Handle the exception by logging or providing a default value
-              print("Error reading audio tags: $e");
-            }
+            Tag? tag = await AudioTags.read(songData.songPath);
+            title = tag?.title;
+            trackArtist = tag?.trackArtist;
+            pictures = tag?.pictures;
 
-            selectedPlayListSongsDataList.add(SongData(
-                songData.songId,
-                title ?? "no name",
-                trackArtist ?? "no name",
-                pictures?.first.bytes ?? Uint8List(0),
-                songData.songPath.toString(),
-                songData.songIsPlaying,
-                songData.songIsMyFavourite));
+            for (var favouriteSongTile in favouriteSongsTitles) {
+              if (favouriteSongTile == title) {
+                selectedPlayListSongsDataList.add(SongDataClass(
+                    title ?? "no name",
+                    trackArtist ?? "no name",
+                    pictures?.first.bytes ?? Uint8List(0),
+                    songData.songPath.toString(),
+                    false,
+                    true));
+              } else {
+                selectedPlayListSongsDataList.add(SongDataClass(
+                    title ?? "no name",
+                    trackArtist ?? "no name",
+                    pictures?.first.bytes ?? Uint8List(0),
+                    songData.songPath.toString(),
+                    false,
+                    false));
+              }
+            }
           }
         }
       }
     }
-
     notifyListeners();
   }
 
   /// Adds or removes a song from the favourites list in the database.
-  Future<void> addOrRemoveSongFromFavourite(int songId) async {
+  Future<void> addOrRemoveSongFromFavourite(String songTitle) async {
     await isarDBInstance.writeTxn(() async {
-      final songToUpdate = await isarDBInstance.allSongs.get(songId);
+      final favouriteSongsList =
+          await isarDBInstance.favouriteSongsDatas.where().findAll();
 
-      if (songToUpdate != null) {
-        final bool isMyFavourite = songToUpdate.songIsMyFavourite;
-        songToUpdate.songIsMyFavourite = !isMyFavourite;
-        for (var song in songDataList) {
-          if (song.songId == songId) {
-            song.songIsMyFavourite = !isMyFavourite;
+      if (favouriteSongsList.isNotEmpty) {
+        for (int i = 0; i < favouriteSongsList.length; i++) {
+          if (favouriteSongsList[i].songTitle != songTitle) {
+            final newFavouriteSongTitle = FavouriteSongsData()
+              ..songTitle = songTitle;
+            await isarDBInstance.favouriteSongsDatas.put(newFavouriteSongTitle);
+          } else {
+            await isarDBInstance.favouriteSongsDatas
+                .filter()
+                .songTitleEqualTo(songTitle)
+                .deleteAll();
           }
         }
-        await isarDBInstance.allSongs.put(songToUpdate);
+      } else {
+        final newFavouriteSongTitle = FavouriteSongsData()
+          ..songTitle = songTitle;
+        await isarDBInstance.favouriteSongsDatas.put(newFavouriteSongTitle);
       }
     });
 
+    for (var song in songDataList) {
+      if (song.songTitle == songTitle) {
+        song.songIsMyFavourite = !song.songIsMyFavourite;
+        debugPrint(song.songTitle);
+      }
+    }
+
     for (var song in selectedPlayListSongsDataList) {
-      if (song.songId == songId) {
+      if (song.songTitle == songTitle) {
         song.songIsMyFavourite = !song.songIsMyFavourite;
       }
     }
@@ -325,127 +340,54 @@ class DataBaseHelper extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Fetches all favourite songs from the database.
-  Future<void> fetchFavouriteSongsFromSongData() async {
-    final favouriteSongsListFromDataBase = await isarDBInstance.allSongs
-        .filter()
-        .songIsMyFavouriteEqualTo(true)
-        .findAll();
-
-    final songsToRemove = [];
-    for (var favouriteSongData in favouriteSongDataList) {
-      if (!favouriteSongsListFromDataBase.any((favouriteSongDatafromDB) =>
-          favouriteSongDatafromDB.songId == favouriteSongData.songId)) {
-        songsToRemove.add(favouriteSongData);
-      }
-    }
-
-    for (var songData in songsToRemove) {
-      favouriteSongDataList.remove(songData);
-    }
-
-    for (var favouriteSongDatafromDB in favouriteSongsListFromDataBase) {
-      if (!favouriteSongDataList
-          .any((song) => song.songId == favouriteSongDatafromDB.songId)) {
-        String? title;
-        String? trackArtist;
-        List<Picture>? pictures;
-
-        try {
-          if (favouriteSongDatafromDB.songPath != null &&
-              favouriteSongDatafromDB.songPath!.isNotEmpty) {
-            Tag? tag = await AudioTags.read(favouriteSongDatafromDB.songPath!);
-            title = tag?.title;
-            trackArtist =
-                tag?.trackArtist; // Corrected from trackArtist to artist
-            pictures = tag?.pictures;
-          }
-        } catch (e) {
-          // Handle the exception by logging or providing a default value
-          print("Error reading audio tags: $e");
-        }
-
-        favouriteSongDataList.add(SongData(
-            favouriteSongDatafromDB.songId,
-            title!,
-            trackArtist!,
-            pictures!.first.bytes,
-            favouriteSongDatafromDB.songPath.toString(),
-            favouriteSongDatafromDB.songIsPlaying,
-            favouriteSongDatafromDB.songIsMyFavourite));
-      }
-    }
-    await fetchSongDataFromDataBase();
-    notifyListeners();
-  }
-
-  /// Toggles the play/pause state of a song and updates the database accordingly.
-  Future<void> songPalyAndPause(int songId) async {
-    final songDataListFromDataBase =
-        await isarDBInstance.allSongs.where().findAll();
-
-    await isarDBInstance.writeTxn(() async {
-      // Set all other songs to not playing
-      for (var songDatafromDB in songDataListFromDataBase) {
-        if (songDatafromDB.songId != songId) {
-          songDatafromDB.songIsPlaying = false;
-          await isarDBInstance.allSongs.put(songDatafromDB);
-        }
-      }
-
-      // Update the selected song's playing state
-      final songToUpdate = await isarDBInstance.allSongs.get(songId);
-      if (songToUpdate != null) {
-        final bool isPlaying = songToUpdate.songIsPlaying;
-        songToUpdate.songIsPlaying = !isPlaying;
-        await isarDBInstance.allSongs.put(songToUpdate);
-
-        // Update the local songDataList
-        for (var song in songDataList) {
-          if (song.songId == songId) {
-            song.songIsPlaying = !isPlaying;
-          } else {
-            song.songIsPlaying = false;
-          }
-        }
-
-        for (var song in selectedPlayListSongsDataList) {
-          if (song.songId == songId) {
-            song.songIsPlaying = !isPlaying;
-          } else {
-            song.songIsPlaying = false;
-          }
-        }
-
-        // Update the local favouriteSongDataList
-        for (var song in favouriteSongDataList) {
-          if (song.songId == songId) {
-            song.songIsPlaying = !isPlaying;
-          } else {
-            song.songIsPlaying = false;
-          }
-        }
-      }
-    });
-    notifyListeners();
-  }
-
-  /// Sets all songs to not playing in the database.
-  static Future<void> setAllSongsToNotPlaying() async {
-    await isarDBInstance.writeTxn(() async {
-      final songDataListFromDataBase =
-          await isarDBInstance.allSongs.where().findAll();
-      for (var songDatafromDB in songDataListFromDataBase) {
-        songDatafromDB.songIsPlaying = false;
-      }
-      await isarDBInstance.allSongs.putAll(songDataListFromDataBase);
-    });
-  }
-
   void shuffleSongs() {
     songDataList.shuffle();
-    favouriteSongDataList.shuffle();
-    selectedPlayListSongsDataList.shuffle();
+    // favouriteSongDataList.shuffle();
+    // selectedPlayListSongsDataList.shuffle();
     notifyListeners();
+  }
+
+  Future<void> fetchFavouriteSongsFromSongData() async {
+    final favouriteSongTitles =
+        await isarDBInstance.favouriteSongsDatas.where().findAll();
+
+    for (int i = 0; i < favouriteSongTitles.length; i++) {
+      for (var song in songDataList) {
+        if (favouriteSongTitles[i].songTitle == song.songTitle &&
+            !favouriteSongTitles.contains(song.songTitle)) {
+          favouriteSongDataList.add(song);
+          notifyListeners();
+        }
+      }
+    }
+  }
+
+  void setSongPlayAndPause(SongDataClass selectedSong) {
+    // Update the local songDataList
+
+    for (var song in songDataList) {
+      if (song == selectedSong) {
+        song.songIsPlaying = !song.songIsPlaying;
+      } else {
+        song.songIsPlaying = false;
+      }
+    }
+
+    for (var song in selectedPlayListSongsDataList) {
+      if (song == selectedSong) {
+        song.songIsPlaying = !song.songIsPlaying;
+      } else {
+        song.songIsPlaying = false;
+      }
+    }
+
+    // Update the local favouriteSongDataList
+    for (var song in favouriteSongDataList) {
+      if (song == selectedSong) {
+        song.songIsPlaying = !song.songIsPlaying;
+      } else {
+        song.songIsPlaying = false;
+      }
+    }
   }
 }
