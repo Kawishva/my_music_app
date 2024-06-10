@@ -57,7 +57,7 @@ class DataBaseHelper extends ChangeNotifier {
 
           if (pictures!.isNotEmpty) {
             for (var picture in pictures) {
-              if (picture != null) {
+              if (picture.bytes.isNotEmpty) {
                 imageBytes = picture.bytes;
                 break;
               }
@@ -151,7 +151,7 @@ class DataBaseHelper extends ChangeNotifier {
 
             if (pictures!.isNotEmpty) {
               for (var picture in pictures) {
-                if (picture != null) {
+                if (picture.bytes.isNotEmpty) {
                   imageBytes = picture.bytes;
                   break;
                 }
