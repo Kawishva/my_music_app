@@ -26,7 +26,6 @@ class _SongsSearchBarState extends State<SongsSearchBar> {
   @override
   void initState() {
     super.initState();
-    // Clear the search text controller on initialization.
     widget.searchTextController.clear();
   }
 

@@ -114,8 +114,8 @@ class _PlayListsScreensState extends State<PlayListsScreens> {
                                       size: 60,
                                       color:
                                           widget.songsData[index].songIsPlaying
-                                              ? Colors.white.withOpacity(0.8)
-                                              : Colors.white.withOpacity(0.4),
+                                              ? Colors.black.withOpacity(0.8)
+                                              : Colors.black.withOpacity(0.3),
                                     ),
                                     style: ButtonStyle(
                                         backgroundColor:
@@ -226,15 +226,17 @@ class _PlayListsScreensState extends State<PlayListsScreens> {
                       ),
                       Padding(
                         padding: const EdgeInsets.only(left: 0),
-                        child: Text(
-                          widget.songsData[index].songTitle,
-                          textAlign: TextAlign.center,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.alatsi(
-                            // letterSpacing: 0.5,
-                            color: Colors.white,
-                            fontWeight: FontWeight.normal,
-                            fontSize: 12,
+                        child: Tooltip(
+                          message: widget.songsData[index].songTitle,
+                          child: Text(
+                            widget.songsData[index].songTitle,
+                            textAlign: TextAlign.center,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.alatsi(
+                              color: Colors.white,
+                              fontWeight: FontWeight.normal,
+                              fontSize: 12,
+                            ),
                           ),
                         ),
                       ),

@@ -41,12 +41,13 @@ class DataBaseHelper extends ChangeNotifier {
           .where((item) => item.path.endsWith('.mp3'))
           .map((item) => File(item.path))
           .toList();
-
-      for (var songPath in importedSongsPathList) {
-        if (importedSongsPathList.isNotEmpty) {
+      debugPrint(importedSongsPathList.length.toString());
+      if (importedSongsPathList.isNotEmpty) {
+        for (var songPath in importedSongsPathList) {
           String? title;
           String? trackArtist;
           List<Picture>? pictures;
+          Uint8List imageBytes = Uint8List(0); // Default value
 
           Tag? tag = await AudioTags.read(songPath.path);
           title = tag?.title;
@@ -54,19 +55,27 @@ class DataBaseHelper extends ChangeNotifier {
               tag?.trackArtist; // Corrected from trackArtist to artist
           pictures = tag?.pictures;
 
+          if (pictures!.isNotEmpty) {
+            for (var picture in pictures) {
+              if (picture != null) {
+                imageBytes = picture.bytes;
+                break;
+              }
+            }
+          }
           songDataList.add(SongDataClass(
-              title ?? "no name",
-              trackArtist ?? "no name",
-              pictures?.first.bytes ?? Uint8List(0),
-              songPath.toString(),
+              title ?? "${songPath.path.replaceFirst("${dir.path}\\", "")}",
+              trackArtist ?? "",
+              imageBytes,
+              songPath.path,
               false,
               false));
 
           notifyListeners();
           await saveFolderPathToDataBase(directoryPath);
-        } else {
-          debugPrint("no songs found!");
         }
+      } else {
+        debugPrint("no songs found!");
       }
     } else {
       debugPrint("file picker canceled");
@@ -126,45 +135,61 @@ class DataBaseHelper extends ChangeNotifier {
             .map((item) => File(item.path))
             .toList();
 
-        for (var songPath in importedSongsPathList) {
-          String? title;
-          String? trackArtist;
-          List<Picture>? pictures;
+        debugPrint(importedSongsPathList.first.toString());
+        if (importedSongsPathList.isNotEmpty) {
+          for (var songPath in importedSongsPathList) {
+            String? title;
+            String? trackArtist;
+            List<Picture>? pictures;
+            Uint8List imageBytes = Uint8List(0); // Default value
 
-          Tag? tag = await AudioTags.read(songPath.path);
-          title = tag?.title;
-          trackArtist =
-              tag?.trackArtist; // Corrected from trackArtist to artist
-          pictures = tag?.pictures;
+            Tag? tag = await AudioTags.read(songPath.path);
+            title = tag?.title;
+            trackArtist =
+                tag?.trackArtist; // Corrected from trackArtist to artist
+            pictures = tag?.pictures;
 
-          if (favouriteSongsTitles.isNotEmpty) {
-            for (int i = 0; i < favouriteSongsTitles.length; i++) {
-              if (favouriteSongsTitles[i].songTitle == title) {
-                songDataList.add(SongDataClass(
-                    title ?? "no name",
-                    trackArtist ?? "no name",
-                    pictures?.first.bytes ?? Uint8List(0),
-                    songPath.path,
-                    false,
-                    true));
-              } else {
-                songDataList.add(SongDataClass(
-                    title ?? "no name",
-                    trackArtist ?? "no name",
-                    pictures?.first.bytes ?? Uint8List(0),
-                    songPath.path,
-                    false,
-                    false));
+            if (pictures!.isNotEmpty) {
+              for (var picture in pictures) {
+                if (picture != null) {
+                  imageBytes = picture.bytes;
+                  break;
+                }
               }
             }
-          } else {
-            songDataList.add(SongDataClass(
-                title ?? "no name",
-                trackArtist ?? "no name",
-                pictures?.first.bytes ?? Uint8List(0),
-                songPath.path,
-                false,
-                false));
+
+            if (favouriteSongsTitles.isNotEmpty) {
+              for (int i = 0; i < favouriteSongsTitles.length; i++) {
+                if (favouriteSongsTitles[i].songTitle == title) {
+                  songDataList.add(SongDataClass(
+                      title ??
+                          "${songPath.path.replaceFirst("${dir.path}\\", "")}",
+                      trackArtist ?? "",
+                      imageBytes,
+                      songPath.path,
+                      false,
+                      true));
+                } else {
+                  songDataList.add(SongDataClass(
+                      title ??
+                          "${songPath.path.replaceFirst("${dir.path}\\", "")}",
+                      trackArtist ?? "",
+                      imageBytes,
+                      songPath.path,
+                      false,
+                      false));
+                }
+              }
+            } else {
+              songDataList.add(SongDataClass(
+                  title ?? "${songPath.path.replaceFirst("${dir.path}\\", "")}",
+                  trackArtist ?? "",
+                  imageBytes,
+                  songPath.path,
+                  false,
+                  false));
+              debugPrint(songDataList.first.toString());
+            }
           }
         }
         importedSongsPathList.clear();

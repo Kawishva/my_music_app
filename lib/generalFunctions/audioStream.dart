@@ -73,10 +73,14 @@ class AudiostreamFunctions extends ChangeNotifier {
 
   void songPlayPause() {
     if (selectedSong != null) {
-      if (playerState == PlayerState.playing) {
-        pauseMusic();
+      if (playerState != PlayerState.stopped) {
+        if (playerState == PlayerState.playing) {
+          pauseMusic();
+        } else {
+          resumeSong();
+        }
       } else {
-        resumeSong();
+        playMusic();
       }
     }
   }

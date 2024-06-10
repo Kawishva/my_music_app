@@ -168,7 +168,7 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
                               )
                             : Icon(
                                 Bootstrap.music_note_beamed,
-                                size: 60,
+                                size: 100,
                               ),
                       ),
                     ),
@@ -408,7 +408,7 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
                                                   )
                                                 : Icon(
                                                     Bootstrap.music_note_beamed,
-                                                    size: 15,
+                                                    size: 35,
                                                     color: Colors.black,
                                                   ),
                                           ),
