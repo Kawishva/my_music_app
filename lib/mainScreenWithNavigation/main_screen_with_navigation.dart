@@ -1,3 +1,4 @@
+import 'package:animate_do/animate_do.dart';
 import 'package:fade_indexed_stack/fade_indexed_stack.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +8,8 @@ import 'package:my_music_app/mainScreenWithNavigation/audioTraySmall.dart';
 import 'package:my_music_app/mainScreenWithNavigation/navigationBar/navigationBar.dart';
 import 'package:my_music_app/mainScreenWithNavigation/search_bar.dart';
 import 'package:provider/provider.dart';
+import 'package:window_manager/window_manager.dart';
+import 'package:windows_taskbar/windows_taskbar.dart';
 import '../generalFunctions/audioStream.dart';
 import '../generalFunctions/navigationBarChange.dart';
 import '../isarDatabase/databaseHelper/song.dart';
@@ -31,11 +34,55 @@ class _SplashScreenState extends State<MainScreenWithNavigation> {
   @override
   void initState() {
     super.initState();
+    _initializeWindow();
+    enableThumbnailToolBar();
   }
 
   @override
   void dispose() {
     super.dispose();
+  }
+
+  void _initializeWindow() async {
+    await windowManager.ensureInitialized();
+
+    WindowOptions windowOptions = const WindowOptions(
+      size: Size(960, 640),
+      titleBarStyle: TitleBarStyle.normal,
+    );
+
+    await windowManager.waitUntilReadyToShow(windowOptions, () async {
+      await windowManager.show();
+      await windowManager.focus();
+      await windowManager.setMaximizable(false);
+      await windowManager.setResizable(false);
+    });
+  }
+
+  void enableThumbnailToolBar() {
+    WindowsTaskbar.setThumbnailToolbar([
+      ThumbnailToolbarButton(
+        ThumbnailToolbarAssetIcon('lib/icons/backward.ico'),
+        'Play Previous Song',
+        () {
+          context.read<AudiostreamFunctions>().playPreviousSong();
+        },
+      ),
+      ThumbnailToolbarButton(
+        ThumbnailToolbarAssetIcon('lib/icons/play.ico'),
+        'Play/Pause',
+        () {
+          context.read<AudiostreamFunctions>().songPlayPause();
+        },
+      ),
+      ThumbnailToolbarButton(
+        ThumbnailToolbarAssetIcon('lib/icons/forward.ico'),
+        'Play Next Song',
+        () {
+          context.read<AudiostreamFunctions>().playNextSong();
+        },
+      ),
+    ]);
   }
 
   @override
@@ -141,19 +188,29 @@ class _SplashScreenState extends State<MainScreenWithNavigation> {
               // Small audio tray
               audioTrayIsMinimized &&
                       navigationBarChangeInstance.getAudioTrayVisibility
-                  ? AudioTraySmall(
-                      onAudioTrayMinimizingFuntion: () =>
-                          _onAudioTrayMinimizingAndMaximizingFuntion(),
-                      onAudioTrayCloseFuntion: () => _onAudioTrayCloseFuntion(),
+                  ? FadeInUp(
+                      animate: true,
+                      duration: Duration(milliseconds: 200),
+                      child: AudioTraySmall(
+                        onAudioTrayMinimizingFuntion: () =>
+                            _onAudioTrayMinimizingAndMaximizingFuntion(),
+                        onAudioTrayCloseFuntion: () =>
+                            _onAudioTrayCloseFuntion(),
+                      ),
                     )
                   : Container(),
               // Large audio tray
               !audioTrayIsMinimized &&
                       navigationBarChangeInstance.getAudioTrayVisibility
-                  ? AudioTrayLarge(
-                      onAudioTrayMinimizingFuntion: () =>
-                          _onAudioTrayMinimizingAndMaximizingFuntion(),
-                      onAudioTrayCloseFuntion: () => _onAudioTrayCloseFuntion(),
+                  ? FadeInRight(
+                      animate: true,
+                      duration: Duration(milliseconds: 200),
+                      child: AudioTrayLarge(
+                        onAudioTrayMinimizingFuntion: () =>
+                            _onAudioTrayMinimizingAndMaximizingFuntion(),
+                        onAudioTrayCloseFuntion: () =>
+                            _onAudioTrayCloseFuntion(),
+                      ),
                     )
                   : Container(),
             ],
