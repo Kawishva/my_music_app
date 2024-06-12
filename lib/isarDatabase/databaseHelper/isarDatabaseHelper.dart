@@ -51,8 +51,7 @@ class DataBaseHelper extends ChangeNotifier {
 
           Tag? tag = await AudioTags.read(songPath.path);
           title = tag?.title;
-          trackArtist =
-              tag?.trackArtist; // Corrected from trackArtist to artist
+          trackArtist = tag?.trackArtist;
           pictures = tag?.pictures;
 
           if (pictures!.isNotEmpty) {
@@ -135,10 +134,11 @@ class DataBaseHelper extends ChangeNotifier {
             .map((item) => File(item.path))
             .toList();
 
-        debugPrint(importedSongsPathList.first.toString());
+        debugPrint(favouriteSongsTitles.length.toString());
         if (importedSongsPathList.isNotEmpty) {
           for (var songPath in importedSongsPathList) {
             String? title;
+            String? songtitle;
             String? trackArtist;
             List<Picture>? pictures;
             Uint8List imageBytes = Uint8List(0); // Default value
@@ -158,37 +158,31 @@ class DataBaseHelper extends ChangeNotifier {
               }
             }
 
+            songtitle =
+                title ?? "${songPath.path.replaceFirst("${dir.path}\\", "")}";
+
             if (favouriteSongsTitles.isNotEmpty) {
-              for (int i = 0; i < favouriteSongsTitles.length; i++) {
-                if (favouriteSongsTitles[i].songTitle == title) {
-                  songDataList.add(SongDataClass(
-                      title ??
-                          "${songPath.path.replaceFirst("${dir.path}\\", "")}",
-                      trackArtist ?? "",
-                      imageBytes,
-                      songPath.path,
-                      false,
-                      true));
-                } else {
-                  songDataList.add(SongDataClass(
-                      title ??
-                          "${songPath.path.replaceFirst("${dir.path}\\", "")}",
-                      trackArtist ?? "",
-                      imageBytes,
-                      songPath.path,
-                      false,
-                      false));
+              bool isFavourite = false;
+
+              for (var favsongTitle in favouriteSongsTitles) {
+                if (favsongTitle.songTitle == songtitle) {
+                  isFavourite = true;
+                  break;
                 }
               }
-            } else {
+
               songDataList.add(SongDataClass(
-                  title ?? "${songPath.path.replaceFirst("${dir.path}\\", "")}",
-                  trackArtist ?? "",
-                  imageBytes,
-                  songPath.path,
-                  false,
-                  false));
-              debugPrint(songDataList.first.toString());
+                songtitle,
+                trackArtist ?? "",
+                imageBytes,
+                songPath.path,
+                false,
+                isFavourite,
+              ));
+            } else {
+              songDataList.add(SongDataClass(songtitle, trackArtist ?? "",
+                  imageBytes, songPath.path, false, false));
+              // debugPrint(songDataList.first.toString());
             }
           }
         }
@@ -277,8 +271,11 @@ class DataBaseHelper extends ChangeNotifier {
 
   Future<void> fetchSongsListToSelectedPlayList(int playListId) async {
     selectedPlayListSongsDataList.clear(); // Clear existing data
+
     final favouriteSongsTitles =
         await isarDBInstance.favouriteSongsDatas.where().findAll();
+    final favouriteSongsSet =
+        favouriteSongsTitles.map((song) => song.songTitle).toSet();
 
     final selectedPlayListInDataBase =
         await isarDBInstance.playListsDatas.get(playListId);
@@ -287,38 +284,23 @@ class DataBaseHelper extends ChangeNotifier {
       for (var songTitle in selectedPlayListInDataBase.songsTitle) {
         for (var songData in songDataList) {
           if (songData.songTitle == songTitle) {
-            String? title;
-            String? trackArtist;
-            List<Picture>? pictures;
-
-            Tag? tag = await AudioTags.read(songData.songPath);
-            title = tag?.title;
-            trackArtist = tag?.trackArtist;
-            pictures = tag?.pictures;
-
-            for (var favouriteSongTile in favouriteSongsTitles) {
-              if (favouriteSongTile == title) {
-                selectedPlayListSongsDataList.add(SongDataClass(
-                    title ?? "no name",
-                    trackArtist ?? "no name",
-                    pictures?.first.bytes ?? Uint8List(0),
-                    songData.songPath.toString(),
-                    false,
-                    true));
-              } else {
-                selectedPlayListSongsDataList.add(SongDataClass(
-                    title ?? "no name",
-                    trackArtist ?? "no name",
-                    pictures?.first.bytes ?? Uint8List(0),
-                    songData.songPath.toString(),
-                    false,
-                    false));
-              }
-            }
+            bool isFavourite = favouriteSongsSet.contains(songData.songTitle);
+            selectedPlayListSongsDataList.add(
+              SongDataClass(
+                songData.songTitle,
+                songData.artistName,
+                songData.imageByteArray,
+                songData.songPath,
+                false,
+                isFavourite,
+              ),
+            );
+            break; // Break the inner loop once the song is found
           }
         }
       }
     }
+
     notifyListeners();
   }
 
@@ -329,16 +311,18 @@ class DataBaseHelper extends ChangeNotifier {
           await isarDBInstance.favouriteSongsDatas.where().findAll();
 
       if (favouriteSongsList.isNotEmpty) {
-        for (int i = 0; i < favouriteSongsList.length; i++) {
-          if (favouriteSongsList[i].songTitle != songTitle) {
+        for (var favSong in favouriteSongsList) {
+          if (favSong.songTitle != songTitle) {
             final newFavouriteSongTitle = FavouriteSongsData()
               ..songTitle = songTitle;
             await isarDBInstance.favouriteSongsDatas.put(newFavouriteSongTitle);
+            break;
           } else {
             await isarDBInstance.favouriteSongsDatas
                 .filter()
                 .songTitleEqualTo(songTitle)
                 .deleteAll();
+            break;
           }
         }
       } else {
@@ -375,44 +359,31 @@ class DataBaseHelper extends ChangeNotifier {
   Future<void> fetchFavouriteSongsFromSongData() async {
     final favouriteSongTitles =
         await isarDBInstance.favouriteSongsDatas.where().findAll();
+    final favouriteSongTitlesSet =
+        favouriteSongTitles.map((favSong) => favSong.songTitle).toSet();
 
-    for (int i = 0; i < favouriteSongTitles.length; i++) {
+    if (favouriteSongDataList.isEmpty) {
+      // Initial population of the favouriteSongDataList
       for (var song in songDataList) {
-        if (favouriteSongTitles[i].songTitle == song.songTitle &&
-            !favouriteSongTitles.contains(song.songTitle)) {
+        if (favouriteSongTitlesSet.contains(song.songTitle)) {
           favouriteSongDataList.add(song);
-          notifyListeners();
+        }
+      }
+    } else {
+      // Update existing list
+      // Remove non-favourites
+      favouriteSongDataList.removeWhere(
+          (song) => !favouriteSongTitlesSet.contains(song.songTitle));
+
+      // Add new favourites
+      for (var song in songDataList) {
+        if (favouriteSongTitlesSet.contains(song.songTitle) &&
+            !favouriteSongDataList.contains(song)) {
+          favouriteSongDataList.add(song);
         }
       }
     }
-  }
 
-  void setSongPlayAndPause(SongDataClass selectedSong) {
-    // Update the local songDataList
-
-    for (var song in songDataList) {
-      if (song == selectedSong) {
-        song.songIsPlaying = !song.songIsPlaying;
-      } else {
-        song.songIsPlaying = false;
-      }
-    }
-
-    for (var song in selectedPlayListSongsDataList) {
-      if (song == selectedSong) {
-        song.songIsPlaying = !song.songIsPlaying;
-      } else {
-        song.songIsPlaying = false;
-      }
-    }
-
-    // Update the local favouriteSongDataList
-    for (var song in favouriteSongDataList) {
-      if (song == selectedSong) {
-        song.songIsPlaying = !song.songIsPlaying;
-      } else {
-        song.songIsPlaying = false;
-      }
-    }
+    notifyListeners();
   }
 }

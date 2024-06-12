@@ -1,4 +1,5 @@
 // ignore_for_file: must_be_immutable
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:icons_plus/icons_plus.dart';
@@ -35,6 +36,7 @@ class _PlayListsScreensState extends State<PlayListsScreens> {
     final dataBaseHelperContext = Provider.of<DataBaseHelper>(context);
     final navigationBarChangeInstance =
         Provider.of<NavigationBarChange>(context);
+    final audioStreamInstance = Provider.of<AudiostreamFunctions>(context);
 
     // Determine the list of songs to display based on the current navigation bar index
     List<SongDataClass> songDataList = dataBaseHelperContext.songDataList;
@@ -108,7 +110,11 @@ class _PlayListsScreensState extends State<PlayListsScreens> {
                                     onPressed: () => _songPalyAndPause(
                                         widget.songsData[index]),
                                     icon: Icon(
-                                      widget.songsData[index].songIsPlaying
+                                      audioStreamInstance.selectedSong ==
+                                                  widget.songsData[index] &&
+                                              audioStreamInstance
+                                                      .getPlayerState ==
+                                                  PlayerState.playing
                                           ? Bootstrap.pause_circle_fill
                                           : Bootstrap.play_circle_fill,
                                       size: 60,
@@ -185,9 +191,7 @@ class _PlayListsScreensState extends State<PlayListsScreens> {
                                         height: 20,
                                         child: IconButton(
                                           onPressed: () => _onCreatePopUpWindow(
-                                              context,
-                                              widget
-                                                  .songsData[index].songTitle),
+                                              context, widget.songsData[index]),
                                           style: ButtonStyle(
                                               padding: WidgetStateProperty.all(
                                                   EdgeInsets.zero),
@@ -280,20 +284,19 @@ class _PlayListsScreensState extends State<PlayListsScreens> {
         .setAudioData(selectedSong, widget.songsData);
 
     context.read<NavigationBarChange>().setAudioTrayersAreVisible();
-
     context.read<NavigationBarChange>().setplayListNamgechange(true);
-
-    context.read<DataBaseHelper>().setSongPlayAndPause(selectedSong);
-
     context.read<AudiostreamFunctions>().playMusic();
   }
 
   /// Displays a popup window for playlist selection.
-  void _onCreatePopUpWindow(BuildContext newContext, String songTitle) {
+  void _onCreatePopUpWindow(BuildContext newContext, SongDataClass pickedSong) {
     context
         .read<DataBaseHelper>()
-        .fetchTemporyPlayListLibraryForSelectedSong(songTitle);
+        .fetchTemporyPlayListLibraryForSelectedSong(pickedSong.songTitle);
     showDialog(
-        context: newContext, builder: (context) => PlayListPopUpWindow());
+        context: newContext,
+        builder: (context) => PlayListPopUpWindow(
+              selectedSong: pickedSong,
+            ));
   }
 }

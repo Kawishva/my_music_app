@@ -68,33 +68,7 @@ class _NavigationBarHolderState extends State<NavigationBarHolder> {
                   ),
                 ),
               ),
-              // Explore Button
-              /*  NavigationTextButton(
-                buttonBoxShadow: [
-                  navigationBarChangeInstance.navigationIndex == 0
-                      ? const BoxShadow(
-                          color: Color(0xFF44C7FF),
-                          spreadRadius: 3,
-                          blurRadius: 8,
-                          offset: Offset(0, 0), // changes position of shadow
-                        )
-                      : const BoxShadow(
-                          color: Colors.transparent,
-                          spreadRadius: 0,
-                          blurRadius: 0,
-                          offset: Offset(0, 0), // changes position of shadow
-                        ),
-                ],
-                buttonOnPressed: () =>
-                    _navigationBarIndexChangeFunction(1, -1, 0, "EXPLORE"),
-                buttonColor: navigationBarChangeInstance.navigationIndex == 0
-                    ? const Color(0xFF44C7FF)
-                    : Colors.transparent,
-                buttonName: "EXPLORE",
-                buttonFontSize: 14,
-                buttonLetterSpacing: 3,
-                fontWeight: FontWeight.bold,
-              ),*/
+
               // Library Label
               Padding(
                 padding: const EdgeInsets.only(right: 37, top: 20),
@@ -239,7 +213,7 @@ class _NavigationBarHolderState extends State<NavigationBarHolder> {
                                 ? const Color(0xFF44C7FF)
                                 : Colors.transparent,
                         buttonName: playListDataList[index].playListName,
-                        buttonFontSize: 12,
+                        buttonFontSize: 15,
                         buttonLetterSpacing: 1,
                         fontWeight: FontWeight.normal,
                       ),

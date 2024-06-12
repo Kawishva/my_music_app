@@ -191,9 +191,6 @@ class _SongsSearchBarState extends State<SongsSearchBar> {
           .setAudioData(selectedSong, widget.songsData);
 
       context.read<NavigationBarChange>().setAudioTrayersAreVisible();
-
-      context.read<DataBaseHelper>().setSongPlayAndPause(selectedSong);
-
       context.read<AudiostreamFunctions>().playMusic();
     }
   }

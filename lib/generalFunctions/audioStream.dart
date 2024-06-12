@@ -50,7 +50,6 @@ class AudiostreamFunctions extends ChangeNotifier {
 
   void playMusic() async {
     await player.stop();
-    selectedSong!.songIsPlaying = true;
     await player.play(DeviceFileSource(selectedSong!.songPath.toString()));
     await player.setVolume(volume); // Set the volume when playing
     updateSongPlayState();
@@ -59,14 +58,12 @@ class AudiostreamFunctions extends ChangeNotifier {
 
   void resumeSong() async {
     await player.resume();
-    selectedSong!.songIsPlaying = true;
     updateSongPlayState();
     notifyListeners();
   }
 
   void pauseMusic() async {
     await player.pause();
-    selectedSong!.songIsPlaying = false;
     updateSongPlayState();
     notifyListeners();
   }

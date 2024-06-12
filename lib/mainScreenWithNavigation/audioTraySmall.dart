@@ -332,7 +332,6 @@ class _AudioTraySmallState extends State<AudioTraySmall> {
   }
 
   void _songPalyAndPause(SongDataClass selectedSong) {
-    context.read<DataBaseHelper>().setSongPlayAndPause(selectedSong);
     context
         .read<AudiostreamFunctions>()
         .setAudioData(selectedSong, widget.songsData);
@@ -340,23 +339,6 @@ class _AudioTraySmallState extends State<AudioTraySmall> {
   }
 
   void _playNextSong() {
-    final audioStreamInstance = context.read<AudiostreamFunctions>();
-
-    SongDataClass? currentSong = audioStreamInstance.getSelectedSongData;
-
-    for (int i = 0; i < widget.songsData.length; i++) {
-      if (widget.songsData[i] == currentSong) {
-        if (widget.songsData.length == i + 1) {
-          currentSong = widget.songsData.first;
-        } else {
-          currentSong = widget.songsData[i + 1];
-        }
-        break;
-      }
-    }
-
-    context.read<DataBaseHelper>().setSongPlayAndPause(currentSong!);
-    audioStreamInstance.setAudioData(currentSong, widget.songsData);
     context.read<AudiostreamFunctions>().playNextSong();
   }
 
@@ -365,22 +347,6 @@ class _AudioTraySmallState extends State<AudioTraySmall> {
   }
 
   void _playPreviousSong() {
-    final audioStreamInstance = context.read<AudiostreamFunctions>();
-
-    SongDataClass? currentSong = audioStreamInstance.getSelectedSongData;
-
-    for (int i = 0; i < widget.songsData.length; i++) {
-      if (widget.songsData[i] == currentSong) {
-        if (i == 0) {
-          currentSong = widget.songsData.last;
-        } else {
-          currentSong = widget.songsData[i - 1];
-        }
-        break;
-      }
-    }
-    context.read<DataBaseHelper>().setSongPlayAndPause(currentSong!);
-    audioStreamInstance.setAudioData(currentSong, widget.songsData);
     context.read<AudiostreamFunctions>().playPreviousSong();
   }
 

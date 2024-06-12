@@ -230,7 +230,7 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
                     Builder(builder: (newContext) {
                       return AudioButtons(
                         onButtonPressed: () => _onCreatePopUpWindow(
-                            context, widget.selectedAudio!.songTitle),
+                            context, widget.selectedAudio!),
                         buttonIcon: Bootstrap.three_dots_vertical,
                         buttonWidth: 25,
                         buttonHeight: 25,
@@ -346,132 +346,143 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
                           decoration: BoxDecoration(
                               color: Colors.white.withOpacity(0.09),
                               borderRadius: BorderRadius.circular(15)),
-                          child: ListView.builder(
-                              scrollDirection: Axis.vertical,
-                              padding: EdgeInsets.symmetric(vertical: 5),
-                              itemCount: widget.songsData.length,
-                              itemBuilder: (context, index) {
-                                return Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      vertical: 2, horizontal: 6),
-                                  child: ElevatedButton(
-                                    onPressed: () => _playSlectedSong(
-                                        widget.songsData[index]),
-                                    style: ButtonStyle(
-                                        padding: WidgetStateProperty.all(
-                                            EdgeInsets.symmetric(
-                                                vertical: 5, horizontal: 5)),
-                                        elevation: WidgetStateProperty.all(0),
-                                        shape: WidgetStateProperty.all<
-                                            RoundedRectangleBorder>(
-                                          RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                                8), // Rounded corners.
-                                          ),
+                          child: ReorderableListView.builder(
+                            onReorder: (int oldIndex, int newIndex) {
+                              if (oldIndex < newIndex) {
+                                newIndex--;
+                              }
+
+                              final oldSong =
+                                  widget.songsData.removeAt(oldIndex);
+                              widget.songsData.insert(newIndex, oldSong);
+                            },
+                            scrollDirection: Axis.vertical,
+                            padding: EdgeInsets.symmetric(vertical: 5),
+                            itemCount: widget.songsData.length,
+                            itemBuilder: (context, index) {
+                              return Padding(
+                                key: ValueKey(index),
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 2, horizontal: 6),
+                                child: ElevatedButton(
+                                  key: ValueKey(index),
+                                  onPressed: () =>
+                                      _playSlectedSong(widget.songsData[index]),
+                                  style: ButtonStyle(
+                                      padding: WidgetStateProperty.all(
+                                          EdgeInsets.symmetric(
+                                              vertical: 5, horizontal: 5)),
+                                      elevation: WidgetStateProperty.all(0),
+                                      shape: WidgetStateProperty.all<
+                                          RoundedRectangleBorder>(
+                                        RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                              8), // Rounded corners.
                                         ),
-                                        backgroundColor: widget
-                                                .songsData[index].songIsPlaying
-                                            ? WidgetStateProperty.all(
-                                                Colors.white.withOpacity(0.25))
-                                            : WidgetStateProperty.all(
-                                                Colors.white.withOpacity(0.06)),
-                                        overlayColor: WidgetStateProperty.all(
-                                            Colors.white.withOpacity(0.05))),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.start,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: [
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 0, vertical: 5),
-                                          child: Container(
-                                            alignment: Alignment.center,
-                                            decoration: BoxDecoration(
-                                                color: Colors.white,
-                                                borderRadius:
-                                                    BorderRadius.circular(3)),
-                                            child: widget.songsData[index]
-                                                    .imageByteArray.isNotEmpty
-                                                ? ClipRRect(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            3),
-                                                    child: Image.memory(
-                                                      width: 35,
-                                                      height: 35,
-                                                      widget.songsData[index]
-                                                          .imageByteArray,
-                                                      fit: BoxFit.cover,
-                                                    ),
-                                                  )
-                                                : Icon(
+                                      ),
+                                      backgroundColor: audioStreamInstance
+                                                      .selectedSong ==
+                                                  widget.songsData[index] &&
+                                              audioStreamInstance
+                                                      .getPlayerState ==
+                                                  PlayerState.playing
+                                          ? WidgetStateProperty.all(
+                                              Colors.white.withOpacity(0.25))
+                                          : WidgetStateProperty.all(
+                                              Colors.white.withOpacity(0.06)),
+                                      overlayColor: WidgetStateProperty.all(
+                                          Colors.white.withOpacity(0.05))),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 0, vertical: 5),
+                                        child: Container(
+                                          alignment: Alignment.center,
+                                          decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius:
+                                                  BorderRadius.circular(3)),
+                                          child: widget.songsData[index]
+                                                  .imageByteArray.isNotEmpty
+                                              ? ClipRRect(
+                                                  borderRadius:
+                                                      BorderRadius.circular(3),
+                                                  child: Image.memory(
+                                                    width: 35,
+                                                    height: 35,
+                                                    widget.songsData[index]
+                                                        .imageByteArray,
+                                                    fit: BoxFit.cover,
+                                                  ),
+                                                )
+                                              : Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(8),
+                                                  child: Icon(
                                                     Bootstrap.music_note_beamed,
-                                                    size: 35,
+                                                    size: 20,
                                                     color: Colors.black,
                                                   ),
+                                                ),
+                                        ),
+                                      ),
+                                      Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 5, vertical: 2),
+                                            child: Container(
+                                              width: 155,
+                                              child: Text(
+                                                widget
+                                                    .songsData[index].songTitle,
+                                                textAlign: TextAlign.start,
+                                                overflow: TextOverflow.ellipsis,
+                                                maxLines: 1,
+                                                style: GoogleFonts.alatsi(
+                                                  color: Colors.white,
+                                                  //  letterSpacing: 1,
+                                                  fontWeight: FontWeight.normal,
+                                                  fontSize: 11,
+                                                ),
+                                              ),
+                                            ),
                                           ),
-                                        ),
-                                        Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 5,
-                                                      vertical: 2),
-                                              child: Container(
-                                                width: 173,
-                                                child: Text(
-                                                  widget.songsData[index]
-                                                      .songTitle,
-                                                  textAlign: TextAlign.start,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  maxLines: 1,
-                                                  style: GoogleFonts.alatsi(
-                                                    color: Colors.white,
-                                                    //  letterSpacing: 1,
-                                                    fontWeight:
-                                                        FontWeight.normal,
-                                                    fontSize: 11,
-                                                  ),
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 5),
+                                            child: Container(
+                                              width: 155,
+                                              child: Text(
+                                                widget.songsData[index]
+                                                    .artistName,
+                                                textAlign: TextAlign.start,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: GoogleFonts.alatsi(
+                                                  color: Colors.white,
+                                                  //  letterSpacing: 1,
+                                                  fontWeight: FontWeight.normal,
+                                                  fontSize: 9,
                                                 ),
                                               ),
                                             ),
-                                            Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 5),
-                                              child: Container(
-                                                width: 173,
-                                                child: Text(
-                                                  widget.songsData[index]
-                                                      .artistName,
-                                                  textAlign: TextAlign.start,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  style: GoogleFonts.alatsi(
-                                                    color: Colors.white,
-                                                    //  letterSpacing: 1,
-                                                    fontWeight:
-                                                        FontWeight.normal,
-                                                    fontSize: 9,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
                                   ),
-                                );
-                              }),
+                                ),
+                              );
+                            },
+                          ),
                         ),
                       ),
                     )
@@ -499,12 +510,15 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
   }
 
   // Displays a popup window for playlist selection.
-  void _onCreatePopUpWindow(BuildContext newContext, String songTitle) {
+  void _onCreatePopUpWindow(BuildContext newContext, SongDataClass pickedSong) {
     context
         .read<DataBaseHelper>()
-        .fetchTemporyPlayListLibraryForSelectedSong(songTitle);
+        .fetchTemporyPlayListLibraryForSelectedSong(pickedSong.songTitle);
     showDialog(
-        context: newContext, builder: (context) => PlayListPopUpWindow());
+        context: newContext,
+        builder: (context) => PlayListPopUpWindow(
+              selectedSong: pickedSong,
+            ));
   }
 
   void _playSlectedSong(SongDataClass selectedSong) {
@@ -513,22 +527,18 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
         .setAudioData(selectedSong, widget.songsData);
 
     context.read<AudiostreamFunctions>().playMusic();
-    context.read<DataBaseHelper>().setSongPlayAndPause(selectedSong);
   }
 
   void _songPalyAndPause(SongDataClass selectedSong) {
     context.read<AudiostreamFunctions>().songPlayPause();
-    context.read<DataBaseHelper>().setSongPlayAndPause(selectedSong);
   }
 
   void _playNextSong() {
     context.read<AudiostreamFunctions>().playNextSong();
-    context.read<DataBaseHelper>().setSongPlayAndPause(widget.selectedAudio!);
   }
 
   void _playPreviousSong() {
     context.read<AudiostreamFunctions>().playPreviousSong();
-    context.read<DataBaseHelper>().setSongPlayAndPause(widget.selectedAudio!);
   }
 
   void _shuffleSongsList() {

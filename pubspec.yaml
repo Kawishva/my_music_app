@@ -55,6 +55,13 @@ dependencies:
   audiotags: ^1.4.0
   on_popup_window_widget: ^0.0.13
   provider: ^6.1.2
+  desktop_drop: ^0.4.4
+  slide_indexed_stack: ^0.0.1
+  animate_do: ^3.3.4
+  auto_animated: ^3.2.0
+  windows_taskbar: ^1.1.2
+  video_player_media_kit: ^1.0.5
+  media_kit_libs_windows_video: any
 
 
 dev_dependencies:
