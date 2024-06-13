@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:my_music_app/isarDatabase/databaseHelper/isarDatabaseHelper.dart';
 import 'package:my_music_app/splash_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:video_player_media_kit/video_player_media_kit.dart';
 import 'package:window_manager/window_manager.dart';
 import 'generalFunctions/audioStream.dart';
 import 'generalFunctions/navigationBarChange.dart';
@@ -11,12 +12,16 @@ Future<void> main() async {
 
   await DataBaseHelper.databaseInitialize();
 
-  await windowManager.ensureInitialized();
+  VideoPlayerMediaKit.ensureInitialized(
+    windows:
+        true, // default: false    -    dependency: media_kit_libs_windows_video
+  );
 
+  await windowManager.ensureInitialized();
   WindowOptions windowOptions = const WindowOptions(
-    size: Size(600, 400),
-    skipTaskbar: false,
+    size: Size(960, 640),
     titleBarStyle: TitleBarStyle.hidden,
+    skipTaskbar: false,
     title: "MyMusic",
   );
 

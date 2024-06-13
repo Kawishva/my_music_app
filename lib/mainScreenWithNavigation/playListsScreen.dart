@@ -60,7 +60,7 @@ class _PlayListsScreensState extends State<PlayListsScreens> {
             padding: EdgeInsets.all(3), // Padding around the grid
             itemCount: widget.songsData.length, // Number of items in the grid
             gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-              maxCrossAxisExtent: 152, // Max width of each item
+              maxCrossAxisExtent: 155, // Max width of each item
               crossAxisSpacing: 0, // Spacing between columns
               mainAxisSpacing: 0, // Spacing between rows
             ),
@@ -81,9 +81,9 @@ class _PlayListsScreensState extends State<PlayListsScreens> {
                             borderRadius: BorderRadius.circular(10),
                             boxShadow: [
                               BoxShadow(
-                                color: Color(0xFF18D7FD).withOpacity(0.3),
-                                spreadRadius: 2.5,
-                                blurRadius: 3,
+                                color: Colors.white.withOpacity(0.5),
+                                spreadRadius: 3,
+                                blurRadius: 8,
                                 offset: const Offset(
                                     0, 0), // Changes position of shadow
                               )
@@ -179,10 +179,7 @@ class _PlayListsScreensState extends State<PlayListsScreens> {
                                                 ? Bootstrap.heart_fill
                                                 : Bootstrap.heart,
                                             size: 23,
-                                            color: widget.songsData[index]
-                                                    .songIsMyFavourite
-                                                ? Colors.red
-                                                : Colors.black,
+                                            color: Colors.black,
                                           ),
                                         )),
                                     Builder(builder: (newContext) {
@@ -229,17 +226,18 @@ class _PlayListsScreensState extends State<PlayListsScreens> {
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.only(left: 0),
+                        padding: const EdgeInsets.only(top: 5),
                         child: Tooltip(
                           message: widget.songsData[index].songTitle,
                           child: Text(
                             widget.songsData[index].songTitle,
+                            maxLines: 2,
                             textAlign: TextAlign.center,
                             overflow: TextOverflow.ellipsis,
                             style: GoogleFonts.alatsi(
                               color: Colors.white,
                               fontWeight: FontWeight.normal,
-                              fontSize: 12,
+                              fontSize: 10,
                             ),
                           ),
                         ),

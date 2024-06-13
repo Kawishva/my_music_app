@@ -57,6 +57,17 @@ dependencies:
   provider: ^6.1.2
   animate_do: ^3.3.4
   windows_taskbar: ^1.1.2
+  fc_native_video_thumbnail: ^0.8.0
+  video_player_media_kit: ^1.0.5
+
+  
+  # NOTE:
+  # It is not necessary to select all.
+  # Select based on your usage:
+  media_kit_libs_windows_video: any
+
+
+  
  
 
 

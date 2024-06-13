@@ -69,27 +69,17 @@ class _AudioTraySmallState extends State<AudioTraySmall> {
     return Align(
       alignment: Alignment.bottomCenter,
       child: Padding(
-        padding: const EdgeInsets.only(bottom: 10, left: 150),
+        padding: const EdgeInsets.only(bottom: 10, left: 200, right: 20),
         child: Container(
-          width: 350,
           height: 110,
           padding: EdgeInsets.all(0),
           decoration: BoxDecoration(
             //color: Colors.grey.withOpacity(0.1),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Color(0xFF022B35).withOpacity(0.6),
-                Color(0xFF030B21).withOpacity(0.7),
-                Color(0xFF000000).withOpacity(0.8),
-                Color(0xFF260000).withOpacity(0.8),
-              ],
-            ),
+            color: Colors.black.withOpacity(0.9),
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.lightBlueAccent.withOpacity(0.2),
+                color: Colors.white.withOpacity(0.2),
                 spreadRadius: 5,
                 blurRadius: 5,
                 offset: const Offset(0, 0), // changes position of shadow
@@ -102,10 +92,10 @@ class _AudioTraySmallState extends State<AudioTraySmall> {
               alignment: Alignment.center,
               children: [
                 Padding(
-                  padding: const EdgeInsets.only(top: 0, right: 5),
+                  padding: const EdgeInsets.only(top: 5, right: 5),
                   child: Container(
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Padding(
@@ -135,32 +125,50 @@ class _AudioTraySmallState extends State<AudioTraySmall> {
                           ),
                         ),
                         Padding(
-                          padding: const EdgeInsets.only(top: 25, right: 5),
+                          padding: const EdgeInsets.only(top: 0, right: 5),
                           child: Container(
                             child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.start,
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                Container(
-                                  width: 150,
-                                  alignment: Alignment.center,
-                                  child: Text(
-                                    widget.selectedAudio!.songTitle,
-                                    textAlign: TextAlign.center,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: GoogleFonts.alatsi(
-                                      color: Colors.white,
-                                      letterSpacing: 1,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 10,
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    AudioButtons(
+                                      onButtonPressed: () =>
+                                          _addOrRemoveSongFromFavourite(
+                                              widget.selectedAudio!.songTitle),
+                                      buttonIcon: widget
+                                              .selectedAudio!.songIsMyFavourite
+                                          ? Bootstrap.heart_fill
+                                          : Bootstrap.heart,
+                                      buttonWidth: 30,
+                                      buttonHeight: 30,
+                                      buttonIconSize: 18,
+                                      buttonBorderRadiusSize: 8,
                                     ),
-                                  ),
+                                    Container(
+                                      padding: EdgeInsets.only(right: 60),
+                                      child: Text(
+                                        widget.selectedAudio!.songTitle,
+                                        textAlign: TextAlign.center,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: GoogleFonts.alatsi(
+                                          color: Colors.white,
+                                          letterSpacing: 1,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                                 Padding(
-                                  padding: const EdgeInsets.all(5),
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 5, horizontal: 10),
                                   child: Container(
                                     height: 20,
-                                    width: 210,
+                                    width: 580,
                                     child: ProgressBar(
                                       progress: audioStreamInstance
                                           .getCurrentDureation,
@@ -258,22 +266,6 @@ class _AudioTraySmallState extends State<AudioTraySmall> {
                       ],
                     ),
                   ),
-                ),
-                Align(
-                  alignment: AlignmentDirectional(-0.2786, -0.5),
-                  child: Builder(builder: (context) {
-                    return AudioButtons(
-                      onButtonPressed: () => _addOrRemoveSongFromFavourite(
-                          widget.selectedAudio!.songTitle),
-                      buttonIcon: widget.selectedAudio!.songIsMyFavourite
-                          ? Bootstrap.heart_fill
-                          : Bootstrap.heart,
-                      buttonWidth: 25,
-                      buttonHeight: 25,
-                      buttonIconSize: 17,
-                      buttonBorderRadiusSize: 8,
-                    );
-                  }),
                 ),
                 Align(
                   alignment: Alignment.topCenter,

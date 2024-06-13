@@ -47,15 +47,13 @@ class _SplashScreenState extends State<MainScreenWithNavigation> {
     await windowManager.ensureInitialized();
 
     WindowOptions windowOptions = const WindowOptions(
-      size: Size(960, 640),
       titleBarStyle: TitleBarStyle.normal,
     );
 
     await windowManager.waitUntilReadyToShow(windowOptions, () async {
       await windowManager.show();
       await windowManager.focus();
-      await windowManager.setMaximizable(false);
-      await windowManager.setResizable(false);
+      await windowManager.center();
     });
   }
 
@@ -94,7 +92,8 @@ class _SplashScreenState extends State<MainScreenWithNavigation> {
       body: SafeArea(
         child: Container(
           decoration: const BoxDecoration(
-            gradient: LinearGradient(
+
+              /* gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
@@ -103,8 +102,8 @@ class _SplashScreenState extends State<MainScreenWithNavigation> {
                 Color(0xFF000000),
                 Color(0xFF260000),
               ],
-            ),
-          ),
+            ),*/
+              ),
           child: Stack(
             children: [
               // Main content with navigation and audio tray

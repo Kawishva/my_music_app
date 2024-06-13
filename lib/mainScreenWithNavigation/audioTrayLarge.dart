@@ -80,21 +80,12 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
           width: 250,
           height: audioTrayPlayListIsExpanded ? 600 : 400,
           decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFF022B35).withOpacity(0.6),
-                  Color(0xFF030B21).withOpacity(0.7),
-                  Color(0xFF000000).withOpacity(0.8),
-                  Color(0xFF260000).withOpacity(0.8),
-                ],
-              ),
+              color: Colors.black.withOpacity(0.9),
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.lightBlueAccent.withOpacity(0.3),
-                  spreadRadius: 5,
+                  color: Colors.white.withOpacity(0.3),
+                  spreadRadius: 3,
                   blurRadius: 3,
                   offset: const Offset(0, 0), // changes position of shadow
                 )
@@ -347,15 +338,8 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
                               color: Colors.white.withOpacity(0.09),
                               borderRadius: BorderRadius.circular(15)),
                           child: ReorderableListView.builder(
-                            onReorder: (int oldIndex, int newIndex) {
-                              if (oldIndex < newIndex) {
-                                newIndex--;
-                              }
-
-                              final oldSong =
-                                  widget.songsData.removeAt(oldIndex);
-                              widget.songsData.insert(newIndex, oldSong);
-                            },
+                            onReorder: (int oldIndex, int newIndex) =>
+                                _reorderingListViewFuntion(oldIndex, newIndex),
                             scrollDirection: Axis.vertical,
                             padding: EdgeInsets.symmetric(vertical: 5),
                             itemCount: widget.songsData.length,
@@ -387,7 +371,7 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
                                                       .getPlayerState ==
                                                   PlayerState.playing
                                           ? WidgetStateProperty.all(
-                                              Colors.white.withOpacity(0.25))
+                                              Colors.white.withOpacity(0.4))
                                           : WidgetStateProperty.all(
                                               Colors.white.withOpacity(0.06)),
                                       overlayColor: WidgetStateProperty.all(
@@ -547,5 +531,14 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
 
   void _changeVolume(BuildContext newContext) {
     showDialog(context: newContext, builder: (context) => VolumePopUpSlider());
+  }
+
+  void _reorderingListViewFuntion(int oldIndex, int newIndex) {
+    if (oldIndex < newIndex) {
+      newIndex--;
+    }
+
+    final oldSong = widget.songsData.removeAt(oldIndex);
+    widget.songsData.insert(newIndex, oldSong);
   }
 }

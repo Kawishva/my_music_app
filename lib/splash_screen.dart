@@ -59,10 +59,10 @@ class _SplashScreenState extends State<SplashScreen> {
           childWidget: Transform.scale(
             scale: 3, // Scales the child widget by a factor of 3
             child: SizedBox(
-              height: 200,
-              width: 200,
+              height: 150,
+              width: 150,
               child: Image.asset(
-                "lib/icons/appicon.png",
+                "lib/icons/app_icon.png",
               ),
             ),
           ),

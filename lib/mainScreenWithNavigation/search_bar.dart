@@ -11,7 +11,6 @@ import '../isarDatabase/databaseHelper/isarDatabaseHelper.dart';
 
 class SongsSearchBar extends StatefulWidget {
   List<SongDataClass> songsData = [];
-  List<String> songsName = [];
   final TextEditingController searchTextController = TextEditingController();
 
   SongsSearchBar({
@@ -51,20 +50,16 @@ class _SongsSearchBarState extends State<SongsSearchBar> {
     if (navigationBarChangeInstance.navigationBarIndex == 1 ||
         navigationBarChangeInstance.navigationBarIndex == 0) {
       widget.songsData = songDataList;
-      for (var song in songDataList) {
-        widget.songsName.add(song.songTitle);
-      }
+      for (var song in songDataList) {}
     }
     if (navigationBarChangeInstance.navigationBarIndex == 2) {
       for (var song in favouriteSongDataList) {
         widget.songsData = favouriteSongDataList;
-        widget.songsName.add(song.songTitle);
       }
     }
     if (navigationBarChangeInstance.navigationBarIndex == 3) {
       for (var song in selectedPlayListSongsDataList) {
         widget.songsData = selectedPlayListSongsDataList;
-        widget.songsName.add(song.songTitle);
       }
     }
 
@@ -74,15 +69,8 @@ class _SongsSearchBarState extends State<SongsSearchBar> {
         width: 250,
         height: 27,
         decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.15),
           borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.lightBlueAccent.withOpacity(0.12),
-              spreadRadius: 0,
-              blurRadius: 0,
-              offset: const Offset(0, 0), // changes position of shadow
-            ),
-          ],
         ),
         child: SearchField(
           controller: widget.searchTextController,
@@ -92,8 +80,8 @@ class _SongsSearchBarState extends State<SongsSearchBar> {
             widget.searchTextController.clear();
           },
           autovalidateMode: AutovalidateMode.onUserInteraction,
-          suggestions: widget.songsName
-              .map((songName) => SearchFieldListItem(songName.toString()))
+          suggestions: widget.songsData
+              .map((song) => SearchFieldListItem(song.songTitle.toString()))
               .toList(),
           suggestionState: Suggestion.hidden,
           scrollbarDecoration: ScrollbarDecoration(
@@ -105,7 +93,7 @@ class _SongsSearchBarState extends State<SongsSearchBar> {
               fontWeight: FontWeight.normal,
               fontStyle: FontStyle.normal,
               letterSpacing: 0,
-              fontSize: 12,
+              fontSize: 11,
               overflow: TextOverflow.fade,
               color: Colors.white,
             ),
@@ -127,16 +115,7 @@ class _SongsSearchBarState extends State<SongsSearchBar> {
             padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
             elevation: 0,
             // color: Colors.white.withOpacity(0.06),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Color(0xFF022B35).withOpacity(0.6),
-                Color(0xFF030B21).withOpacity(0.8),
-                Color(0xFF000000).withOpacity(0.9),
-                Color(0xFF260000).withOpacity(0.9),
-              ],
-            ),
+            color: Colors.black.withOpacity(0.9),
             selectionColor: Colors.transparent,
             shadowColor: Colors.transparent,
             hoverColor: Colors.white.withOpacity(0.3),
@@ -159,14 +138,14 @@ class _SongsSearchBarState extends State<SongsSearchBar> {
               borderRadius: BorderRadius.all(Radius.circular(20)),
             ),
             filled: true,
-            fillColor: Colors.grey.withOpacity(0.3),
+            fillColor: Colors.white.withOpacity(0.1),
             border: InputBorder.none,
-            hintText: "search....🎧",
+            hintText: "search....",
             hintStyle: GoogleFonts.alatsi(
-              color: Colors.white,
+              color: Colors.white.withOpacity(0.5),
               letterSpacing: 0.5,
               fontWeight: FontWeight.normal,
-              fontSize: 13,
+              fontSize: 12,
             ),
             contentPadding:
                 const EdgeInsets.symmetric(vertical: 0, horizontal: 15),

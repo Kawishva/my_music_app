@@ -39,7 +39,7 @@ class _NavigationBarHolderState extends State<NavigationBarHolder> {
     return Container(
         width: 180,
         decoration: BoxDecoration(
-          color: Colors.grey.withOpacity(0.1),
+          color: Colors.white.withOpacity(0.1),
           borderRadius: const BorderRadius.only(
             topRight: Radius.circular(20),
             bottomRight: Radius.circular(20),
@@ -54,24 +54,24 @@ class _NavigationBarHolderState extends State<NavigationBarHolder> {
           ],
         ),
         child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Padding(
-                padding: const EdgeInsets.only(right: 25, bottom: 30),
+              /*   Padding(
+                padding: const EdgeInsets.only(right: 5, bottom: 0, top: 20),
                 child: SizedBox(
-                  width: 100,
-                  height: 100,
+                  width: 80,
+                  height: 80,
                   child: Image.asset(
-                    "lib/icons/appicon.png",
+                    "lib/icons/app_icon.png",
                     filterQuality: FilterQuality.high,
                   ),
                 ),
-              ),
+              ),*/
 
               // Library Label
               Padding(
-                padding: const EdgeInsets.only(right: 37, top: 20),
+                padding: const EdgeInsets.only(right: 35, top: 50),
                 child: Text(
                   "LIBRARY",
                   style: GoogleFonts.alatsi(
@@ -89,7 +89,7 @@ class _NavigationBarHolderState extends State<NavigationBarHolder> {
                   buttonBoxShadow: [
                     navigationBarChangeInstance.navigationBarIndex == 0
                         ? const BoxShadow(
-                            color: Color(0xFF44C7FF),
+                            color: Colors.white,
                             spreadRadius: 3,
                             blurRadius: 8,
                             offset: Offset(0, 0), // changes position of shadow
@@ -104,7 +104,7 @@ class _NavigationBarHolderState extends State<NavigationBarHolder> {
                   buttonOnPressed: () =>
                       _navigationBarIndexChangeFunction(0, -1, 0, "All songs"),
                   buttonColor: navigationBarChangeInstance.navigationIndex == 0
-                      ? const Color(0xFF44C7FF)
+                      ? Colors.white
                       : Colors.transparent,
                   buttonName: "All songs",
                   buttonFontSize: 15,
@@ -119,7 +119,7 @@ class _NavigationBarHolderState extends State<NavigationBarHolder> {
                   buttonBoxShadow: [
                     navigationBarChangeInstance.navigationBarIndex == 1
                         ? const BoxShadow(
-                            color: Color(0xFF44C7FF),
+                            color: Colors.white,
                             spreadRadius: 3,
                             blurRadius: 8,
                             offset: Offset(0, 0), // changes position of shadow
@@ -134,7 +134,7 @@ class _NavigationBarHolderState extends State<NavigationBarHolder> {
                   buttonOnPressed: () =>
                       _navigationBarIndexChangeFunction(1, -1, 0, "Favourites"),
                   buttonColor: navigationBarChangeInstance.navigationIndex == 1
-                      ? const Color(0xFF44C7FF)
+                      ? Colors.white
                       : Colors.transparent,
                   buttonName: "Favourites",
                   buttonFontSize: 15,
@@ -172,55 +172,58 @@ class _NavigationBarHolderState extends State<NavigationBarHolder> {
                 ),
               ),
               // Playlists List
-              Container(
-                height: 250,
-                child: ListView.builder(
-                  scrollDirection: Axis.vertical,
-                  padding: EdgeInsets.symmetric(vertical: 5),
-                  itemCount: playListDataList.length,
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.only(left: 5),
-                      child: NavigationTextButton(
-                        buttonBoxShadow: [
-                          navigationBarChangeInstance
-                                      .playListviewSelectedIndex ==
-                                  index
-                              ? const BoxShadow(
-                                  color: Color(0xFF44C7FF),
-                                  spreadRadius: 3,
-                                  blurRadius: 8,
-                                  offset: Offset(
-                                      0, 0), // changes position of shadow
-                                )
-                              : const BoxShadow(
-                                  color: Colors.transparent,
-                                  spreadRadius: 0,
-                                  blurRadius: 0,
-                                  offset: Offset(
-                                      0, 0), // changes position of shadow
-                                ),
-                        ],
-                        buttonOnPressed: () =>
-                            _navigationBarIndexChangeFunction(
-                                2,
-                                index,
-                                playListDataList[index].playListId,
-                                playListDataList[index].playListName),
-                        buttonColor:
-                            navigationBarChangeInstance.playListviewIndex ==
+
+              Flexible(
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: ListView.builder(
+                    scrollDirection: Axis.vertical,
+                    padding: EdgeInsets.symmetric(vertical: 5),
+                    itemCount: playListDataList.length,
+                    itemBuilder: (context, index) {
+                      return Padding(
+                        padding: const EdgeInsets.only(left: 5),
+                        child: NavigationTextButton(
+                          buttonBoxShadow: [
+                            navigationBarChangeInstance
+                                        .playListviewSelectedIndex ==
                                     index
-                                ? const Color(0xFF44C7FF)
-                                : Colors.transparent,
-                        buttonName: playListDataList[index].playListName,
-                        buttonFontSize: 15,
-                        buttonLetterSpacing: 1,
-                        fontWeight: FontWeight.normal,
-                      ),
-                    );
-                  },
+                                ? const BoxShadow(
+                                    color: Colors.white,
+                                    spreadRadius: 3,
+                                    blurRadius: 8,
+                                    offset: Offset(
+                                        0, 0), // changes position of shadow
+                                  )
+                                : const BoxShadow(
+                                    color: Colors.transparent,
+                                    spreadRadius: 0,
+                                    blurRadius: 0,
+                                    offset: Offset(
+                                        0, 0), // changes position of shadow
+                                  ),
+                          ],
+                          buttonOnPressed: () =>
+                              _navigationBarIndexChangeFunction(
+                                  2,
+                                  index,
+                                  playListDataList[index].playListId,
+                                  playListDataList[index].playListName),
+                          buttonColor:
+                              navigationBarChangeInstance.playListviewIndex ==
+                                      index
+                                  ? Colors.white
+                                  : Colors.transparent,
+                          buttonName: playListDataList[index].playListName,
+                          buttonFontSize: 15,
+                          buttonLetterSpacing: 1,
+                          fontWeight: FontWeight.normal,
+                        ),
+                      );
+                    },
+                  ),
                 ),
-              )
+              ),
             ]));
   }
 
