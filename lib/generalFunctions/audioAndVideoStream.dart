@@ -61,6 +61,10 @@ class AudiostreamFunctions extends ChangeNotifier {
         songTotalDuration = videoPlayer!.value.duration;
         notifyListeners();
       }
+
+      if (videoPlayer!.value.isCompleted) {
+        playNextSong();
+      }
     });
     notifyListeners();
   }

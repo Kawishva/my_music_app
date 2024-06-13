@@ -121,7 +121,7 @@ class _AudioTraySmallState extends State<AudioTraySmall> {
                                     widget.selectedAudio!.songPath
                                         .endsWith(".mp3")
                                 ? ClipRRect(
-                                    borderRadius: BorderRadius.circular(15),
+                                    borderRadius: BorderRadius.circular(10),
                                     child: Image.memory(
                                       widget.selectedAudio!.imageByteArray,
                                       fit: BoxFit.cover,

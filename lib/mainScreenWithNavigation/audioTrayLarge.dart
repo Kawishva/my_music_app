@@ -74,7 +74,7 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
     widget.playListName = navigationBarChangeInstance.getPlayListName;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 44, horizontal: 10),
+      padding: const EdgeInsets.only(top: 50, right: 15, bottom: 5),
       child: Align(
         alignment: Alignment.centerRight,
         child: Container(
@@ -383,17 +383,20 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
                                         ),
                                       ),
                                       backgroundColor: audioStreamInstance
-                                                      .selectedSong ==
-                                                  widget.songsData[index] &&
-                                              audioStreamInstance
-                                                      .getPlayerState ==
-                                                  PlayerState.playing
+                                                          .selectedSong ==
+                                                      widget.songsData[index] &&
+                                                  audioStreamInstance.getPlayerState ==
+                                                      PlayerState.playing ||
+                                              audioStreamInstance.selectedSong ==
+                                                      widget.songsData[index] &&
+                                                  audioStreamInstance
+                                                      .videoPlayer!
+                                                      .value
+                                                      .isPlaying
                                           ? WidgetStateProperty.all(
                                               Colors.white.withOpacity(0.4))
-                                          : WidgetStateProperty.all(
-                                              Colors.white.withOpacity(0.06)),
-                                      overlayColor: WidgetStateProperty.all(
-                                          Colors.white.withOpacity(0.05))),
+                                          : WidgetStateProperty.all(Colors.white.withOpacity(0.06)),
+                                      overlayColor: WidgetStateProperty.all(Colors.white.withOpacity(0.05))),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.start,
                                     crossAxisAlignment:
