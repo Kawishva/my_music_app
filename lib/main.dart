@@ -4,7 +4,7 @@ import 'package:my_music_app/splash_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player_media_kit/video_player_media_kit.dart';
 import 'package:window_manager/window_manager.dart';
-import 'generalFunctions/audioStream.dart';
+import 'generalFunctions/audioAndVideoStream.dart';
 import 'generalFunctions/navigationBarChange.dart';
 
 Future<void> main() async {

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:audiotags/audiotags.dart';
+import 'package:fc_native_video_thumbnail/fc_native_video_thumbnail.dart';
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
@@ -38,41 +39,68 @@ class DataBaseHelper extends ChangeNotifier {
 
       final List<File> importedSongsPathList = dir
           .listSync()
-          .where((item) => item.path.endsWith('.mp3'))
+          .where((item) =>
+              item.path.endsWith('.mp3') || item.path.endsWith('.mp4'))
           .map((item) => File(item.path))
           .toList();
-      debugPrint(importedSongsPathList.length.toString());
+
       if (importedSongsPathList.isNotEmpty) {
         for (var songPath in importedSongsPathList) {
-          String? title;
-          String? trackArtist;
+          String? title = "";
+          String? trackArtist = "";
           List<Picture>? pictures;
           Uint8List imageBytes = Uint8List(0); // Default value
 
-          Tag? tag = await AudioTags.read(songPath.path);
-          title = tag?.title;
-          trackArtist = tag?.trackArtist;
-          pictures = tag?.pictures;
+          if (songPath.path.endsWith('.mp3')) {
+            Tag? tag = await AudioTags.read(songPath.path);
+            title = tag?.title ??
+                "${songPath.path.replaceFirst("${dir.path}\\", "").replaceAll(".mp3", "")}";
+            trackArtist = tag?.trackArtist ?? "";
+            pictures = tag?.pictures;
 
-          if (pictures!.isNotEmpty) {
-            for (var picture in pictures) {
-              if (picture.bytes.isNotEmpty) {
-                imageBytes = picture.bytes;
-                break;
+            if (pictures!.isNotEmpty) {
+              for (var picture in pictures) {
+                if (picture.bytes.isNotEmpty) {
+                  imageBytes = picture.bytes;
+                  break;
+                }
               }
             }
-          }
-          songDataList.add(SongDataClass(
-              title ?? "${songPath.path.replaceFirst("${dir.path}\\", "")}",
-              trackArtist ?? "",
-              imageBytes,
-              songPath.path,
-              false,
-              false));
+          } else {
+            String? videoThumbNaliPath = songPath.path.replaceAll(".mp4", "");
+            title = videoThumbNaliPath.replaceFirst("${dir.path}\\", "");
 
-          notifyListeners();
+            debugPrint(title);
+            final hasThumbnail = await FcNativeVideoThumbnail()
+                .getVideoThumbnail(
+                    srcFile: songPath.path,
+                    destFile: videoThumbNaliPath,
+                    width: 800,
+                    height: 800,
+                    quality: 100,
+                    format: 'png',
+                    keepAspectRatio: true);
+
+            if (hasThumbnail) {
+              var vedioThumbNailImage = File(videoThumbNaliPath);
+              imageBytes = vedioThumbNailImage.readAsBytesSync();
+              debugPrint("has thumbnail");
+              vedioThumbNailImage.deleteSync();
+            } else {
+              debugPrint("no thumbnail");
+            }
+          }
+
+          if (!songDataList.any((song) => song.songTitle == title)) {
+            songDataList.add(SongDataClass(
+                title, trackArtist, imageBytes, songPath.path, false, false));
+          } else {
+            debugPrint("song is already in!");
+          }
+
           await saveFolderPathToDataBase(directoryPath);
         }
+        notifyListeners();
       } else {
         debugPrint("no songs found!");
       }
@@ -130,58 +158,80 @@ class DataBaseHelper extends ChangeNotifier {
 
         final List<File> importedSongsPathList = dir
             .listSync()
-            .where((item) => item.path.endsWith('.mp3'))
+            .where((item) =>
+                item.path.endsWith('.mp3') || item.path.endsWith('.mp4'))
             .map((item) => File(item.path))
             .toList();
 
         debugPrint(favouriteSongsTitles.length.toString());
         if (importedSongsPathList.isNotEmpty) {
           for (var songPath in importedSongsPathList) {
-            String? title;
-            String? songtitle;
-            String? trackArtist;
+            String? title = "";
+            String? trackArtist = "";
             List<Picture>? pictures;
             Uint8List imageBytes = Uint8List(0); // Default value
 
-            Tag? tag = await AudioTags.read(songPath.path);
-            title = tag?.title;
-            trackArtist =
-                tag?.trackArtist; // Corrected from trackArtist to artist
-            pictures = tag?.pictures;
+            if (songPath.path.endsWith('.mp3')) {
+              Tag? tag = await AudioTags.read(songPath.path);
+              title = tag?.title ??
+                  "${songPath.path.replaceFirst("${dir.path}\\", "").replaceAll(".mp3", "")}";
+              trackArtist = tag?.trackArtist ?? "";
+              pictures = tag?.pictures;
 
-            if (pictures!.isNotEmpty) {
-              for (var picture in pictures) {
-                if (picture.bytes.isNotEmpty) {
-                  imageBytes = picture.bytes;
-                  break;
+              if (pictures!.isNotEmpty) {
+                for (var picture in pictures) {
+                  if (picture.bytes.isNotEmpty) {
+                    imageBytes = picture.bytes;
+                    break;
+                  }
                 }
               }
-            }
+            } else {
+              String? videoThumbNaliPath = songPath.path.replaceAll(".mp4", "");
+              title = videoThumbNaliPath.replaceFirst("${dir.path}\\", "");
 
-            songtitle =
-                title ?? "${songPath.path.replaceFirst("${dir.path}\\", "")}";
+              debugPrint(title);
+              final hasThumbnail = await FcNativeVideoThumbnail()
+                  .getVideoThumbnail(
+                      srcFile: songPath.path,
+                      destFile: videoThumbNaliPath,
+                      width: 800,
+                      height: 800,
+                      quality: 100,
+                      format: 'png',
+                      keepAspectRatio: true);
+
+              if (hasThumbnail) {
+                var vedioThumbNailImage = File(videoThumbNaliPath);
+                imageBytes = vedioThumbNailImage.readAsBytesSync();
+                debugPrint("has thumbnail");
+                vedioThumbNailImage.deleteSync();
+              } else {
+                debugPrint("no thumbnail");
+              }
+            }
 
             if (favouriteSongsTitles.isNotEmpty) {
               bool isFavourite = false;
 
               for (var favsongTitle in favouriteSongsTitles) {
-                if (favsongTitle.songTitle == songtitle) {
+                if (favsongTitle.songTitle == title) {
                   isFavourite = true;
                   break;
                 }
               }
 
               songDataList.add(SongDataClass(
-                songtitle,
-                trackArtist ?? "",
+                title,
+                trackArtist,
                 imageBytes,
                 songPath.path,
                 false,
                 isFavourite,
               ));
             } else {
-              songDataList.add(SongDataClass(songtitle, trackArtist ?? "",
-                  imageBytes, songPath.path, false, false));
+              songDataList.add(SongDataClass(
+                  title, trackArtist, imageBytes, songPath.path, false, false));
               // debugPrint(songDataList.first.toString());
             }
           }

@@ -65,6 +65,7 @@ dependencies:
   # It is not necessary to select all.
   # Select based on your usage:
   media_kit_libs_windows_video: any
+  video_player: ^2.8.7
 
 
   

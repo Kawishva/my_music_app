@@ -5,7 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:icons_plus/icons_plus.dart';
 import 'package:provider/provider.dart';
-import '../generalFunctions/audioStream.dart';
+import 'package:video_player/video_player.dart';
+import '../generalFunctions/audioAndVideoStream.dart';
 import '../generalFunctions/navigationBarChange.dart';
 import '../isarDatabase/databaseHelper/isarDatabaseHelper.dart';
 import '../isarDatabase/databaseHelper/song.dart';
@@ -146,10 +147,18 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
                       child: Container(
                         height: 200,
                         decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: widget.selectedAudio != null &&
+                                    widget.selectedAudio!.imageByteArray
+                                        .isNotEmpty &&
+                                    widget.selectedAudio!.songPath
+                                        .endsWith(".mp4")
+                                ? Colors.black.withOpacity(0.5)
+                                : Colors.white,
                             borderRadius: BorderRadius.circular(15)),
                         child: widget.selectedAudio != null &&
-                                widget.selectedAudio!.imageByteArray.isNotEmpty
+                                widget
+                                    .selectedAudio!.imageByteArray.isNotEmpty &&
+                                widget.selectedAudio!.songPath.endsWith(".mp3")
                             ? ClipRRect(
                                 borderRadius: BorderRadius.circular(15),
                                 child: Image.memory(
@@ -157,10 +166,17 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
                                   fit: BoxFit.cover,
                                 ),
                               )
-                            : Icon(
-                                Bootstrap.music_note_beamed,
-                                size: 100,
-                              ),
+                            : widget.selectedAudio != null &&
+                                    widget.selectedAudio!.imageByteArray
+                                        .isNotEmpty &&
+                                    widget.selectedAudio!.songPath
+                                        .endsWith(".mp4")
+                                ? VideoPlayer(
+                                    audioStreamInstance.getVideoPlayer)
+                                : Icon(
+                                    Bootstrap.music_note_beamed,
+                                    size: 100,
+                                  ),
                       ),
                     ),
                   ),
@@ -236,7 +252,7 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 5),
                 child: ProgressBar(
-                  progress: audioStreamInstance.getCurrentDureation,
+                  progress: audioStreamInstance.getCurrentDuration(),
                   total: audioStreamInstance.getsongTotalDuration,
                   barCapShape: BarCapShape.round,
                   progressBarColor: Colors.white,
@@ -284,7 +300,9 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
                           onButtonPressed: () =>
                               _songPalyAndPause(widget.selectedAudio!),
                           buttonIcon: audioStreamInstance.getPlayerState ==
-                                  PlayerState.playing
+                                      PlayerState.playing ||
+                                  audioStreamInstance
+                                      .videoPlayer!.value.isPlaying
                               ? Bootstrap.pause_circle_fill
                               : Bootstrap.play_circle_fill,
                           buttonWidth: 40,

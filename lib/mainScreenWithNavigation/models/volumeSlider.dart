@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:my_music_app/generalFunctions/audioStream.dart';
+import 'package:my_music_app/generalFunctions/audioAndVideoStream.dart';
 import 'package:provider/provider.dart';
 
 import '../../generalFunctions/navigationBarChange.dart';

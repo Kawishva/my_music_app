@@ -6,7 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:icons_plus/icons_plus.dart';
 import 'package:provider/provider.dart';
-import '../generalFunctions/audioStream.dart';
+import 'package:video_player/video_player.dart';
+import '../generalFunctions/audioAndVideoStream.dart';
 import '../generalFunctions/navigationBarChange.dart';
 import '../isarDatabase/databaseHelper/isarDatabaseHelper.dart';
 import '../isarDatabase/databaseHelper/song.dart';
@@ -105,23 +106,38 @@ class _AudioTraySmallState extends State<AudioTraySmall> {
                             height: 90,
                             width: 90,
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: widget.selectedAudio != null &&
+                                      widget.selectedAudio!.imageByteArray
+                                          .isNotEmpty &&
+                                      widget.selectedAudio!.songPath
+                                          .endsWith(".mp4")
+                                  ? Colors.black.withOpacity(0.5)
+                                  : Colors.white,
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: widget.selectedAudio != null &&
                                     widget.selectedAudio!.imageByteArray
-                                        .isNotEmpty
+                                        .isNotEmpty &&
+                                    widget.selectedAudio!.songPath
+                                        .endsWith(".mp3")
                                 ? ClipRRect(
-                                    borderRadius: BorderRadius.circular(10),
+                                    borderRadius: BorderRadius.circular(15),
                                     child: Image.memory(
                                       widget.selectedAudio!.imageByteArray,
                                       fit: BoxFit.cover,
                                     ),
                                   )
-                                : Icon(
-                                    Bootstrap.music_note_beamed,
-                                    size: 60,
-                                  ),
+                                : widget.selectedAudio != null &&
+                                        widget.selectedAudio!.imageByteArray
+                                            .isNotEmpty &&
+                                        widget.selectedAudio!.songPath
+                                            .endsWith(".mp4")
+                                    ? VideoPlayer(
+                                        audioStreamInstance.getVideoPlayer)
+                                    : Icon(
+                                        Bootstrap.music_note_beamed,
+                                        size: 100,
+                                      ),
                           ),
                         ),
                         Padding(
@@ -132,7 +148,7 @@ class _AudioTraySmallState extends State<AudioTraySmall> {
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  mainAxisAlignment: MainAxisAlignment.start,
                                   children: [
                                     AudioButtons(
                                       onButtonPressed: () =>
@@ -147,17 +163,20 @@ class _AudioTraySmallState extends State<AudioTraySmall> {
                                       buttonIconSize: 18,
                                       buttonBorderRadiusSize: 8,
                                     ),
-                                    Container(
-                                      padding: EdgeInsets.only(right: 60),
-                                      child: Text(
-                                        widget.selectedAudio!.songTitle,
-                                        textAlign: TextAlign.center,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: GoogleFonts.alatsi(
-                                          color: Colors.white,
-                                          letterSpacing: 1,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 12,
+                                    Padding(
+                                      padding: const EdgeInsets.only(right: 50),
+                                      child: Container(
+                                        width: 500,
+                                        child: Text(
+                                          widget.selectedAudio!.songTitle,
+                                          textAlign: TextAlign.center,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: GoogleFonts.alatsi(
+                                            color: Colors.white,
+                                            letterSpacing: 1,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 12,
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -171,7 +190,7 @@ class _AudioTraySmallState extends State<AudioTraySmall> {
                                     width: 580,
                                     child: ProgressBar(
                                       progress: audioStreamInstance
-                                          .getCurrentDureation,
+                                          .getCurrentDuration(),
                                       total: audioStreamInstance
                                           .getsongTotalDuration,
                                       barCapShape: BarCapShape.round,
@@ -230,8 +249,10 @@ class _AudioTraySmallState extends State<AudioTraySmall> {
                                             _songPalyAndPause(
                                                 widget.selectedAudio!),
                                         buttonIcon: audioStreamInstance
-                                                    .getPlayerState ==
-                                                PlayerState.playing
+                                                        .getPlayerState ==
+                                                    PlayerState.playing ||
+                                                audioStreamInstance.videoPlayer!
+                                                    .value.isPlaying
                                             ? Bootstrap.pause_circle_fill
                                             : Bootstrap.play_circle_fill,
                                         buttonWidth: 40,

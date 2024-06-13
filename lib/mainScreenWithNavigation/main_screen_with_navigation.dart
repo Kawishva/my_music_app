@@ -10,7 +10,7 @@ import 'package:my_music_app/mainScreenWithNavigation/search_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:windows_taskbar/windows_taskbar.dart';
-import '../generalFunctions/audioStream.dart';
+import '../generalFunctions/audioAndVideoStream.dart';
 import '../generalFunctions/navigationBarChange.dart';
 import '../isarDatabase/databaseHelper/song.dart';
 import 'audioTrayLarge.dart';

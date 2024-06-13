@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:icons_plus/icons_plus.dart';
 import 'package:provider/provider.dart';
-import '../generalFunctions/audioStream.dart';
+import '../generalFunctions/audioAndVideoStream.dart';
 import '../generalFunctions/navigationBarChange.dart';
 import '../isarDatabase/databaseHelper/isarDatabaseHelper.dart';
 import '../isarDatabase/databaseHelper/song.dart';
@@ -92,11 +92,15 @@ class _PlayListsScreensState extends State<PlayListsScreens> {
                           alignment: Alignment.center,
                           children: [
                             widget.songsData[index].imageByteArray.isNotEmpty
-                                ? ClipRRect(
-                                    borderRadius: BorderRadius.circular(10),
-                                    child: Image.memory(
-                                      widget.songsData[index].imageByteArray,
-                                      fit: BoxFit.cover,
+                                ? Container(
+                                    width: 100,
+                                    height: 100,
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(10),
+                                      child: Image.memory(
+                                        widget.songsData[index].imageByteArray,
+                                        fit: BoxFit.cover,
+                                      ),
                                     ),
                                   )
                                 : Icon(
@@ -111,10 +115,17 @@ class _PlayListsScreensState extends State<PlayListsScreens> {
                                         widget.songsData[index]),
                                     icon: Icon(
                                       audioStreamInstance.selectedSong ==
-                                                  widget.songsData[index] &&
+                                                      widget.songsData[index] &&
+                                                  audioStreamInstance
+                                                          .getPlayerState ==
+                                                      PlayerState.playing ||
                                               audioStreamInstance
-                                                      .getPlayerState ==
-                                                  PlayerState.playing
+                                                          .selectedSong ==
+                                                      widget.songsData[index] &&
+                                                  audioStreamInstance
+                                                      .videoPlayer!
+                                                      .value
+                                                      .isPlaying
                                           ? Bootstrap.pause_circle_fill
                                           : Bootstrap.play_circle_fill,
                                       size: 60,
