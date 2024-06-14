@@ -55,14 +55,16 @@ class _AudioTraySmallState extends State<AudioTraySmall> {
     List<SongDataClass> selectedPlayListSongsDataList =
         dataBaseHelperContext.selectedPlayListSongsDataList;
 
-    if (navigationBarChangeInstance.navigationBarIndex == 0) {
-      widget.songsData = songDataList;
-    }
-    if (navigationBarChangeInstance.navigationBarIndex == 1) {
-      widget.songsData = favouriteSongDataList;
-    }
-    if (navigationBarChangeInstance.navigationBarIndex == 2) {
-      widget.songsData = selectedPlayListSongsDataList;
+    switch (navigationBarChangeInstance.navigationBarIndex) {
+      case 0:
+        widget.songsData = songDataList;
+        break;
+      case 1:
+        widget.songsData = favouriteSongDataList;
+        break;
+      case 2:
+        widget.songsData = selectedPlayListSongsDataList;
+        break;
     }
 
     // Determine the list of songs to display based on the current navigation bar index

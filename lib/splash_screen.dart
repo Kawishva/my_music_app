@@ -16,14 +16,15 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
-    reedSongs();
+    super.initState();
+    // Fetch data from the database
+    readSongs();
     readPlaylist();
     readFavourite();
-    super.initState();
   }
 
   // Fetch all songs data from the database
-  void reedSongs() {
+  void readSongs() {
     context.read<DataBaseHelper>().fetchSongAtStartUp();
   }
 

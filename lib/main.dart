@@ -10,21 +10,27 @@ import 'generalFunctions/navigationBarChange.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Initialize the database
   await DataBaseHelper.databaseInitialize();
 
+  // Ensure the video player media kit is initialized, particularly for Windows
   VideoPlayerMediaKit.ensureInitialized(
-    windows:
-        true, // default: false    -    dependency: media_kit_libs_windows_video
+    windows: true, // Dependency: media_kit_libs_windows_video
   );
 
+  // Ensure window manager is initialized
   await windowManager.ensureInitialized();
+
+  // Define window options
   WindowOptions windowOptions = const WindowOptions(
     size: Size(960, 640),
     titleBarStyle: TitleBarStyle.hidden,
     skipTaskbar: false,
     title: "MyMusic",
+    center: true,
   );
 
+  // Configure the window settings once it's ready to show
   windowManager.waitUntilReadyToShow(windowOptions, () async {
     await windowManager.show();
     await windowManager.focus();
@@ -33,6 +39,7 @@ Future<void> main() async {
     await windowManager.center();
   });
 
+  // Run the app with multiple providers
   runApp(
     MultiProvider(
       providers: [

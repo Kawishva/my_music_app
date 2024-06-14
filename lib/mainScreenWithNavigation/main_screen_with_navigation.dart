@@ -91,19 +91,6 @@ class _SplashScreenState extends State<MainScreenWithNavigation> {
     return Scaffold(
       body: SafeArea(
         child: Container(
-          decoration: const BoxDecoration(
-
-              /* gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Color(0xFF022B35),
-                Color(0xFF030B21),
-                Color(0xFF000000),
-                Color(0xFF260000),
-              ],
-            ),*/
-              ),
           child: Stack(
             children: [
               // Main content with navigation and audio tray

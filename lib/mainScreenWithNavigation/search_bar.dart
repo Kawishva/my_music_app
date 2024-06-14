@@ -30,7 +30,7 @@ class _SongsSearchBarState extends State<SongsSearchBar> {
 
   @override
   void dispose() {
-    // Clear the search text controller on disposal.
+    // Clear the search text controller on disposal
     widget.searchTextController.clear();
     super.dispose();
   }
@@ -40,6 +40,7 @@ class _SongsSearchBarState extends State<SongsSearchBar> {
     final dataBaseHelperContext = Provider.of<DataBaseHelper>(context);
     final navigationBarChangeInstance =
         Provider.of<NavigationBarChange>(context);
+
     // Determine the list of songs to display based on the current navigation bar index
     List<SongDataClass> songDataList = dataBaseHelperContext.songDataList;
     List<SongDataClass> favouriteSongDataList =
@@ -47,20 +48,16 @@ class _SongsSearchBarState extends State<SongsSearchBar> {
     List<SongDataClass> selectedPlayListSongsDataList =
         dataBaseHelperContext.selectedPlayListSongsDataList;
 
-    if (navigationBarChangeInstance.navigationBarIndex == 1 ||
-        navigationBarChangeInstance.navigationBarIndex == 0) {
-      widget.songsData = songDataList;
-      for (var song in songDataList) {}
-    }
-    if (navigationBarChangeInstance.navigationBarIndex == 2) {
-      for (var song in favouriteSongDataList) {
+    switch (navigationBarChangeInstance.navigationBarIndex) {
+      case 0:
+        widget.songsData = songDataList;
+        break;
+      case 1:
         widget.songsData = favouriteSongDataList;
-      }
-    }
-    if (navigationBarChangeInstance.navigationBarIndex == 3) {
-      for (var song in selectedPlayListSongsDataList) {
+        break;
+      case 2:
         widget.songsData = selectedPlayListSongsDataList;
-      }
+        break;
     }
 
     return Padding(
@@ -76,7 +73,7 @@ class _SongsSearchBarState extends State<SongsSearchBar> {
           controller: widget.searchTextController,
           onSuggestionTap: (value) {
             debugPrint(value.searchKey);
-            _songPalyAndPause(value.searchKey);
+            _songPlayAndPause(value.searchKey);
             widget.searchTextController.clear();
           },
           autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -114,7 +111,6 @@ class _SongsSearchBarState extends State<SongsSearchBar> {
           suggestionsDecoration: SuggestionDecoration(
             padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
             elevation: 0,
-            // color: Colors.white.withOpacity(0.06),
             color: Colors.black.withOpacity(0.9),
             selectionColor: Colors.transparent,
             shadowColor: Colors.transparent,
@@ -155,12 +151,15 @@ class _SongsSearchBarState extends State<SongsSearchBar> {
     );
   }
 
-  void _songPalyAndPause(String selectedSongName) {
+  // Play and pause the selected song
+  void _songPlayAndPause(String selectedSongName) {
     SongDataClass? selectedSong;
 
+    // Find the selected song from the list
     for (var songdata in widget.songsData) {
       if (songdata.songTitle == selectedSongName) {
         selectedSong = songdata;
+        break;
       }
     }
 
@@ -168,7 +167,6 @@ class _SongsSearchBarState extends State<SongsSearchBar> {
       context
           .read<AudiostreamFunctions>()
           .setAudioData(selectedSong, widget.songsData);
-
       context.read<NavigationBarChange>().setAudioTrayersAreVisible();
       context.read<AudiostreamFunctions>().playMusic();
     }

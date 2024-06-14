@@ -6,22 +6,16 @@ import 'package:video_player/video_player.dart';
 import '../isarDatabase/databaseHelper/song.dart';
 
 class AudiostreamFunctions extends ChangeNotifier {
-  final audioPlayer = AudioPlayer();
-  VideoPlayerController? videoPlayer;
+  final audioPlayer = AudioPlayer(); // Audio player instance
+  VideoPlayerController? videoPlayer; // Video player controller
 
-  Duration songCurrentDuration = Duration.zero;
-  Duration songTotalDuration = Duration.zero;
-  SongDataClass? selectedSong;
-  List<SongDataClass> songDataList = [];
-  double volume = 0.3;
-  PlayerState playerState = PlayerState.stopped;
-
-  void setAudioData(
-      SongDataClass selectedSong, List<SongDataClass> songDataList) {
-    this.selectedSong = selectedSong;
-    this.songDataList = songDataList;
-    notifyListeners();
-  }
+  Duration songCurrentDuration = Duration.zero; // Current position of the song
+  Duration songTotalDuration = Duration.zero; // Total duration of the song
+  SongDataClass? selectedSong; // Currently selected song
+  List<SongDataClass> songDataList = []; // List of songs
+  double volume = 0.3; // Volume level
+  PlayerState playerState =
+      PlayerState.stopped; // Player state (stopped, playing, etc.)
 
   AudiostreamFunctions() {
     // Listen to position changes
@@ -48,10 +42,20 @@ class AudiostreamFunctions extends ChangeNotifier {
     });
   }
 
+  // Method to set audio data
+  void setAudioData(
+      SongDataClass selectedSong, List<SongDataClass> songDataList) {
+    this.selectedSong = selectedSong;
+    this.songDataList = songDataList;
+    notifyListeners();
+  }
+
+  // Get remaining duration of the current song
   Duration get remainingDuration {
     return songTotalDuration - songCurrentDuration;
   }
 
+  // Initialize video player with a file path
   Future<void> initializeVideoPlayer(String path) async {
     videoPlayer = VideoPlayerController.file(File(path));
     await videoPlayer!.initialize();
@@ -69,6 +73,7 @@ class AudiostreamFunctions extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Play music or video based on file extension
   void playMusic() async {
     if (selectedSong!.songPath.endsWith(".mp3")) {
       await audioPlayer.stop();
@@ -88,31 +93,35 @@ class AudiostreamFunctions extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Resume song playback
   void resumeSong() async {
     await audioPlayer.resume();
-
     updateSongPlayState();
     notifyListeners();
   }
 
+  // Resume video playback
   void resumeVideo() async {
     await videoPlayer!.play();
     updateSongPlayState();
     notifyListeners();
   }
 
+  // Pause video playback
   void pauseVideo() async {
     await videoPlayer!.pause();
     updateSongPlayState();
     notifyListeners();
   }
 
-  void pauseMusic() async {
+  // Pause music playback
+  void pauseSong() async {
     await audioPlayer.pause();
     updateSongPlayState();
     notifyListeners();
   }
 
+  // Stop and dispose video player
   Future<void> stopVideoPlayer() async {
     if (videoPlayer != null && videoPlayer!.value.isPlaying) {
       await videoPlayer!.pause();
@@ -120,12 +129,13 @@ class AudiostreamFunctions extends ChangeNotifier {
     }
   }
 
+  // Play or pause music/video based on current state
   void songPlayPause() async {
     if (selectedSong != null) {
       if (playerState != PlayerState.stopped &&
           selectedSong!.songPath.endsWith(".mp3")) {
         if (playerState == PlayerState.playing) {
-          pauseMusic();
+          pauseSong();
         } else {
           resumeSong();
         }
@@ -145,16 +155,17 @@ class AudiostreamFunctions extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Set volume for audio and video players
   Future<void> setVolume(double newVolume) async {
     volume = newVolume;
     await audioPlayer.setVolume(volume);
-    if (videoPlayer!.value.isPlaying && videoPlayer != null) {
+    if (videoPlayer != null && videoPlayer!.value.isPlaying) {
       await videoPlayer!.setVolume(volume);
     }
-
     notifyListeners();
   }
 
+  // Seek to a specific position in the song or video
   void seek(Duration position) async {
     if (selectedSong!.songPath.endsWith(".mp3")) {
       await audioPlayer.seek(position);
@@ -163,6 +174,7 @@ class AudiostreamFunctions extends ChangeNotifier {
     }
   }
 
+  // Play the next song in the list
   void playNextSong() async {
     int currentIndex = songDataList.indexOf(selectedSong!);
     int nextIndex = (currentIndex + 1) % songDataList.length;
@@ -170,6 +182,7 @@ class AudiostreamFunctions extends ChangeNotifier {
     playMusic();
   }
 
+  // Play the previous song in the list
   void playPreviousSong() async {
     int currentIndex = songDataList.indexOf(selectedSong!);
     int previousIndex =
@@ -178,6 +191,7 @@ class AudiostreamFunctions extends ChangeNotifier {
     playMusic();
   }
 
+  // Update the play state of each song in the list
   void updateSongPlayState() {
     for (var song in songDataList) {
       song.songIsPlaying =
@@ -186,18 +200,20 @@ class AudiostreamFunctions extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Getters for various properties
   double get getVolume => volume;
-  SongDataClass? get getSelectedSongData => this.selectedSong;
-  Duration get getsongTotalDuration => this.songTotalDuration;
-  Duration get getRemainingDuration => this.remainingDuration;
-  PlayerState get getPlayerState => this.playerState;
-  VideoPlayerController get getVideoPlayer => this.videoPlayer!;
+  SongDataClass? get getSelectedSongData => selectedSong;
+  Duration get getsongTotalDuration => songTotalDuration;
+  Duration get getRemainingDuration => remainingDuration;
+  PlayerState get getPlayerState => playerState;
+  VideoPlayerController get getVideoPlayer => videoPlayer!;
 
+  // Get the current duration of the song or video
   Duration getCurrentDuration() {
     if (selectedSong!.songPath.endsWith(".mp4")) {
-      return this.videoPlayer!.value.position;
+      return videoPlayer!.value.position;
     } else {
-      return this.songCurrentDuration;
+      return songCurrentDuration;
     }
   }
 }

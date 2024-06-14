@@ -7,7 +7,6 @@ list(APPEND FLUTTER_PLUGIN_LIST
   audiotags
   fc_native_video_thumbnail
   file_selector_windows
-  flutter_volume_controller
   isar_flutter_libs
   media_kit_libs_windows_video
   media_kit_video

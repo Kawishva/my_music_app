@@ -16,7 +16,7 @@ import 'temporyPlayList.dart';
 class DataBaseHelper extends ChangeNotifier {
   static late Isar isarDBInstance;
 
-  /// Initializes the database and sets all songs to not playing.
+  /// Initializes the database and sets up the Isar database instance.
   static Future<void> databaseInitialize() async {
     final dir = await getApplicationSupportDirectory();
     isarDBInstance = await Isar.open(
@@ -30,13 +30,13 @@ class DataBaseHelper extends ChangeNotifier {
   final List<SongDataClass> selectedPlayListSongsDataList = [];
   final List<PlayListClass> playListDataList = [];
   final List<String> folderDirectoryPathList = [];
-  //final List<int> recentSongsIdList = [];
 
   /// Handles the folder path selection and imports songs if available.
   Future<void> onFolderPathPick(String? directoryPath) async {
     if (directoryPath != null) {
       final Directory dir = Directory(directoryPath);
 
+      // Filter files for mp3 and mp4 extensions
       final List<File> importedSongsPathList = dir
           .listSync()
           .where((item) =>
@@ -67,14 +67,14 @@ class DataBaseHelper extends ChangeNotifier {
               }
             }
           } else {
-            String? videoThumbNaliPath = songPath.path.replaceAll(".mp4", "");
-            title = videoThumbNaliPath.replaceFirst("${dir.path}\\", "");
+            String? videoThumbNailPath = songPath.path.replaceAll(".mp4", "");
+            title = videoThumbNailPath.replaceFirst("${dir.path}\\", "");
 
             debugPrint(title);
             final hasThumbnail = await FcNativeVideoThumbnail()
                 .getVideoThumbnail(
                     srcFile: songPath.path,
-                    destFile: videoThumbNaliPath,
+                    destFile: videoThumbNailPath,
                     width: 800,
                     height: 800,
                     quality: 100,
@@ -82,7 +82,7 @@ class DataBaseHelper extends ChangeNotifier {
                     keepAspectRatio: true);
 
             if (hasThumbnail) {
-              var vedioThumbNailImage = File(videoThumbNaliPath);
+              var vedioThumbNailImage = File(videoThumbNailPath);
               imageBytes = vedioThumbNailImage.readAsBytesSync();
               debugPrint("has thumbnail");
               vedioThumbNailImage.deleteSync();
@@ -91,6 +91,7 @@ class DataBaseHelper extends ChangeNotifier {
             }
           }
 
+          // Add song to the list if it's not already present
           if (!songDataList.any((song) => song.songTitle == title)) {
             songDataList.add(SongDataClass(
                 title, trackArtist, imageBytes, songPath.path, false, false));
@@ -130,7 +131,7 @@ class DataBaseHelper extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Fetches all folder paths from the database.
+  /// Fetches all folder paths from the database and updates the list.
   Future<void> fetchFolderPathsFromDataBase() async {
     final folderPathsDataFromDataBase =
         await isarDBInstance.importedFolders.where().findAll();
@@ -145,6 +146,7 @@ class DataBaseHelper extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Fetches songs from folders at startup.
   Future<void> fetchSongAtStartUp() async {
     final folderPathsDataFromDataBase =
         await isarDBInstance.importedFolders.where().findAll();
@@ -187,14 +189,14 @@ class DataBaseHelper extends ChangeNotifier {
                 }
               }
             } else {
-              String? videoThumbNaliPath = songPath.path.replaceAll(".mp4", "");
-              title = videoThumbNaliPath.replaceFirst("${dir.path}\\", "");
+              String? videoThumbNailPath = songPath.path.replaceAll(".mp4", "");
+              title = videoThumbNailPath.replaceFirst("${dir.path}\\", "");
 
               debugPrint(title);
               final hasThumbnail = await FcNativeVideoThumbnail()
                   .getVideoThumbnail(
                       srcFile: songPath.path,
-                      destFile: videoThumbNaliPath,
+                      destFile: videoThumbNailPath,
                       width: 800,
                       height: 800,
                       quality: 100,
@@ -202,7 +204,7 @@ class DataBaseHelper extends ChangeNotifier {
                       keepAspectRatio: true);
 
               if (hasThumbnail) {
-                var vedioThumbNailImage = File(videoThumbNaliPath);
+                var vedioThumbNailImage = File(videoThumbNailPath);
                 imageBytes = vedioThumbNailImage.readAsBytesSync();
                 debugPrint("has thumbnail");
                 vedioThumbNailImage.deleteSync();
@@ -232,7 +234,6 @@ class DataBaseHelper extends ChangeNotifier {
             } else {
               songDataList.add(SongDataClass(
                   title, trackArtist, imageBytes, songPath.path, false, false));
-              // debugPrint(songDataList.first.toString());
             }
           }
         }
@@ -256,7 +257,7 @@ class DataBaseHelper extends ChangeNotifier {
     await fetchAllPlayListsDataFromDataBase();
   }
 
-  /// Fetches all playlists from the database.
+  /// Fetches all playlists from the database and updates the list.
   Future<void> fetchAllPlayListsDataFromDataBase() async {
     final playListDataListFromDataBase =
         await isarDBInstance.playListsDatas.where().findAll();
@@ -273,6 +274,7 @@ class DataBaseHelper extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Fetches temporary playlist for a selected song.
   Future<void> fetchTemporyPlayListLibraryForSelectedSong(
       String songTitle) async {
     temporyPlayListdataList.clear();
@@ -291,6 +293,7 @@ class DataBaseHelper extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Adds or removes selected songs to/from the selected playlist.
   Future<void> addOrRemoveSelectedSongsToSelectedPlayList(
       int playListId, String songTitle) async {
     final selectedPlayListInDataBase =
@@ -319,6 +322,7 @@ class DataBaseHelper extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Fetches songs for the selected playlist.
   Future<void> fetchSongsListToSelectedPlayList(int playListId) async {
     selectedPlayListSongsDataList.clear(); // Clear existing data
 
@@ -399,13 +403,13 @@ class DataBaseHelper extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Shuffles the list of songs.
   void shuffleSongs() {
     songDataList.shuffle();
-    // favouriteSongDataList.shuffle();
-    // selectedPlayListSongsDataList.shuffle();
     notifyListeners();
   }
 
+  /// Fetches favourite songs from the list of all songs.
   Future<void> fetchFavouriteSongsFromSongData() async {
     final favouriteSongTitles =
         await isarDBInstance.favouriteSongsDatas.where().findAll();
