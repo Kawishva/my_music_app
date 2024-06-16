@@ -68,7 +68,7 @@ class _PlayListsScreensState extends State<PlayListsScreens> {
 
     return Container(
       child: GridView.builder(
-        primary: true,
+        primary: false,
         padding: EdgeInsets.all(3), // Padding around the grid
         itemCount: widget.songsData.length, // Number of items in the grid
         gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
@@ -131,8 +131,10 @@ class _PlayListsScreensState extends State<PlayListsScreens> {
                                           widget.songsData[index] &&
                                       (audioStreamInstance.getPlayerState ==
                                               PlayerState.playing ||
-                                          audioStreamInstance
-                                              .videoPlayer!.value.isPlaying)
+                                          (audioStreamInstance.videoPlayer !=
+                                                  null &&
+                                              audioStreamInstance.videoPlayer!
+                                                  .value.isPlaying))
                                   ? Bootstrap.pause_circle_fill
                                   : Bootstrap.play_circle_fill,
                               size: 60,

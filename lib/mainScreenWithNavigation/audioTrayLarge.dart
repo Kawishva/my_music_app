@@ -303,8 +303,9 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
                               _songPalyAndPause(widget.selectedAudio!),
                           buttonIcon: audioStreamInstance.getPlayerState ==
                                       PlayerState.playing ||
-                                  audioStreamInstance
-                                      .videoPlayer!.value.isPlaying
+                                  (audioStreamInstance.videoPlayer != null &&
+                                      audioStreamInstance
+                                          .videoPlayer!.value.isPlaying)
                               ? Bootstrap.pause_circle_fill
                               : Bootstrap.play_circle_fill,
                           buttonWidth: 40,
@@ -384,21 +385,21 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
                                               8), // Rounded corners.
                                         ),
                                       ),
-                                      backgroundColor: audioStreamInstance
-                                                          .selectedSong ==
-                                                      widget.songsData[index] &&
-                                                  audioStreamInstance.getPlayerState ==
+                                      backgroundColor: audioStreamInstance.selectedSong ==
+                                                  widget.songsData[index] &&
+                                              (audioStreamInstance.getPlayerState ==
                                                       PlayerState.playing ||
-                                              audioStreamInstance.selectedSong ==
-                                                      widget.songsData[index] &&
-                                                  audioStreamInstance
-                                                      .videoPlayer!
-                                                      .value
-                                                      .isPlaying
+                                                  (audioStreamInstance.videoPlayer != null &&
+                                                      audioStreamInstance
+                                                          .videoPlayer!
+                                                          .value
+                                                          .isPlaying))
                                           ? WidgetStateProperty.all(
                                               Colors.white.withOpacity(0.4))
-                                          : WidgetStateProperty.all(Colors.white.withOpacity(0.06)),
-                                      overlayColor: WidgetStateProperty.all(Colors.white.withOpacity(0.05))),
+                                          : WidgetStateProperty.all(
+                                              Colors.white.withOpacity(0.06)),
+                                      overlayColor:
+                                          WidgetStateProperty.all(Colors.white.withOpacity(0.05))),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.start,
                                     crossAxisAlignment:

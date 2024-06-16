@@ -253,8 +253,13 @@ class _AudioTraySmallState extends State<AudioTraySmall> {
                                         buttonIcon: audioStreamInstance
                                                         .getPlayerState ==
                                                     PlayerState.playing ||
-                                                audioStreamInstance.videoPlayer!
-                                                    .value.isPlaying
+                                                (audioStreamInstance
+                                                            .videoPlayer !=
+                                                        null &&
+                                                    audioStreamInstance
+                                                        .videoPlayer!
+                                                        .value
+                                                        .isPlaying)
                                             ? Bootstrap.pause_circle_fill
                                             : Bootstrap.play_circle_fill,
                                         buttonWidth: 40,
