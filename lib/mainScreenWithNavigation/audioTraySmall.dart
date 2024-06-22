@@ -8,7 +8,6 @@ import 'package:icons_plus/icons_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 import '../generalFunctions/audioAndVideoStream.dart';
-import '../generalFunctions/navigationBarChange.dart';
 import '../isarDatabase/databaseHelper/isarDatabaseHelper.dart';
 import '../isarDatabase/databaseHelper/song.dart';
 import 'models/audioButtons.dart';
@@ -40,32 +39,8 @@ class _AudioTraySmallState extends State<AudioTraySmall> {
 
   @override
   Widget build(BuildContext context) {
-    final dataBaseHelperContext = Provider.of<DataBaseHelper>(context);
-    final navigationBarChangeInstance =
-        Provider.of<NavigationBarChange>(context);
-
     final audioStreamInstance = Provider.of<AudiostreamFunctions>(context);
-
     widget.selectedAudio = audioStreamInstance.getSelectedSongData;
-
-    // Determine the list of songs to display based on the current navigation bar index
-    List<SongDataClass> songDataList = dataBaseHelperContext.songDataList;
-    List<SongDataClass> favouriteSongDataList =
-        dataBaseHelperContext.favouriteSongDataList;
-    List<SongDataClass> selectedPlayListSongsDataList =
-        dataBaseHelperContext.selectedPlayListSongsDataList;
-
-    switch (navigationBarChangeInstance.navigationBarIndex) {
-      case 0:
-        widget.songsData = songDataList;
-        break;
-      case 1:
-        widget.songsData = favouriteSongDataList;
-        break;
-      case 2:
-        widget.songsData = selectedPlayListSongsDataList;
-        break;
-    }
 
     // Determine the list of songs to display based on the current navigation bar index
 
@@ -74,7 +49,8 @@ class _AudioTraySmallState extends State<AudioTraySmall> {
       child: Padding(
         padding: const EdgeInsets.only(bottom: 10, left: 200, right: 20),
         child: Container(
-          height: 110,
+          height: 115,
+          width: 750,
           padding: EdgeInsets.all(0),
           decoration: BoxDecoration(
             //color: Colors.grey.withOpacity(0.1),
@@ -98,7 +74,7 @@ class _AudioTraySmallState extends State<AudioTraySmall> {
                   padding: const EdgeInsets.only(top: 5, right: 5),
                   child: Container(
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Padding(
@@ -275,14 +251,29 @@ class _AudioTraySmallState extends State<AudioTraySmall> {
                                         buttonIconSize: 18,
                                         buttonBorderRadiusSize: 8,
                                       ),
-                                      AudioButtons(
-                                        onButtonPressed: () =>
-                                            _changeVolume(context),
-                                        buttonIcon: Bootstrap.volume_up,
-                                        buttonWidth: 30,
-                                        buttonHeight: 30,
-                                        buttonIconSize: 18,
-                                        buttonBorderRadiusSize: 8,
+                                      Row(
+                                        children: [
+                                          AudioButtons(
+                                            onButtonPressed: () =>
+                                                _changeVolume(context),
+                                            buttonIcon: Bootstrap.volume_up,
+                                            buttonWidth: 30,
+                                            buttonHeight: 30,
+                                            buttonIconSize: 18,
+                                            buttonBorderRadiusSize: 8,
+                                          ),
+                                          Text(
+                                            "${((audioStreamInstance.getVolume * 100).toInt()).toString()}",
+                                            textAlign: TextAlign.start,
+                                            overflow: TextOverflow.fade,
+                                            style: GoogleFonts.alatsi(
+                                              color: Colors.white,
+                                              //letterSpacing: 1,
+                                              fontWeight: FontWeight.normal,
+                                              fontSize: 10,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),

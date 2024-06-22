@@ -1,4 +1,5 @@
-// ignore_for_file: must_be_immutable
+// ignore_for_file: deprecated_member_use, must_be_immutable
+import 'package:animate_do/animate_do.dart';
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
@@ -32,11 +33,13 @@ class AudioTrayLarge extends StatefulWidget {
 
 class _AudioTrayLargeState extends State<AudioTrayLarge> {
   bool audioTrayPlayListIsExpanded = true;
+  FocusNode keyboardFocusNode = FocusNode();
 
   @override
   void initState() {
     readPlaylist();
     readFavourite();
+    keyboardFocusNode;
     widget.playListName = "";
     widget.songsData.clear();
     widget.songsData.clear();
@@ -48,9 +51,7 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
     final dataBaseHelperContext = Provider.of<DataBaseHelper>(context);
     final navigationBarChangeInstance =
         Provider.of<NavigationBarChange>(context);
-
     final audioStreamInstance = Provider.of<AudiostreamFunctions>(context);
-
     widget.selectedAudio = audioStreamInstance.getSelectedSongData;
 
     // Determine the list of songs to display based on the current navigation bar index
@@ -76,284 +77,343 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
     widget.playListName = navigationBarChangeInstance.getPlayListName;
 
     return Padding(
-      padding: const EdgeInsets.only(top: 50, right: 15, bottom: 5),
-      child: Align(
-        alignment: Alignment.centerRight,
-        child: Container(
-          width: 250,
-          height: audioTrayPlayListIsExpanded ? 600 : 400,
-          decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.9),
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.white.withOpacity(0.3),
-                  spreadRadius: 3,
-                  blurRadius: 3,
-                  offset: const Offset(0, 0), // changes position of shadow
-                )
-              ]),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Minimize button
-              Align(
-                alignment: Alignment.topCenter,
-                child: Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      AudioButtons(
-                        onButtonPressed: () =>
-                            widget.onAudioTrayMinimizingFuntion(),
-                        buttonIcon: Bootstrap.arrow_down_left_square,
-                        buttonWidth: 25,
-                        buttonHeight: 25,
-                        buttonIconSize: 13,
-                        buttonBorderRadiusSize: 6,
-                      ),
-                      Text(
-                        widget.playListName,
-                        textAlign: TextAlign.start,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.alatsi(
-                          color: Colors.white,
-                          //  letterSpacing: 1,
-                          fontWeight: FontWeight.normal,
-                          fontSize: 11,
-                        ),
-                      ),
-                      AudioButtons(
-                        onButtonPressed: () => widget.onAudioTrayCloseFuntion(),
-                        buttonIcon: Bootstrap.x_lg,
-                        buttonWidth: 25,
-                        buttonHeight: 25,
-                        buttonIconSize: 13,
-                        buttonBorderRadiusSize: 6,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              // Song icon
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 0),
-                      child: Container(
-                        height: 200,
-                        decoration: BoxDecoration(
-                            color: widget.selectedAudio != null &&
-                                    widget.selectedAudio!.imageByteArray
-                                        .isNotEmpty &&
-                                    widget.selectedAudio!.songPath
-                                        .endsWith(".mp4")
-                                ? Colors.black.withOpacity(0.5)
-                                : Colors.white,
-                            borderRadius: BorderRadius.circular(15)),
-                        child: widget.selectedAudio != null &&
-                                widget
-                                    .selectedAudio!.imageByteArray.isNotEmpty &&
-                                widget.selectedAudio!.songPath.endsWith(".mp3")
-                            ? ClipRRect(
-                                borderRadius: BorderRadius.circular(15),
-                                child: Image.memory(
-                                  widget.selectedAudio!.imageByteArray,
-                                  fit: BoxFit.cover,
-                                ),
-                              )
-                            : widget.selectedAudio != null &&
-                                    widget.selectedAudio!.imageByteArray
-                                        .isNotEmpty &&
-                                    widget.selectedAudio!.songPath
-                                        .endsWith(".mp4")
-                                ? VideoPlayer(
-                                    audioStreamInstance.getVideoPlayer)
-                                : Icon(
-                                    Bootstrap.music_note_beamed,
-                                    size: 100,
-                                  ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              // Song name
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
-                child: Row(
+      padding: const EdgeInsets.only(top: 10, left: 190),
+      child: Container(
+        decoration: BoxDecoration(
+            color: Colors.black,
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(15), bottomLeft: Radius.circular(15)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.white.withOpacity(0.3),
+                spreadRadius: 3,
+                blurRadius: 3,
+                offset: const Offset(0, 0), // changes position of shadow
+              )
+            ]),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              flex: 3,
+              child: Container(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    AudioButtons(
-                      onButtonPressed: () => _addOrRemoveSongFromFavourite(
-                          widget.selectedAudio!.songTitle),
-                      buttonIcon: widget.selectedAudio!.songIsMyFavourite
-                          ? Bootstrap.heart_fill
-                          : Bootstrap.heart,
-                      buttonWidth: 27,
-                      buttonHeight: 27,
-                      buttonIconSize: 20,
-                      buttonBorderRadiusSize: 8,
-                    ),
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: 170,
-                          child: Text(
-                            widget.selectedAudio!.songTitle,
-                            textAlign: TextAlign.center,
-                            maxLines: 1,
+                    // Minimize button
+                    Padding(
+                      padding: const EdgeInsets.all(10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          AudioButtons(
+                            onButtonPressed: () =>
+                                widget.onAudioTrayMinimizingFuntion(),
+                            buttonIcon: Bootstrap.arrow_down_left_square,
+                            buttonWidth: 25,
+                            buttonHeight: 25,
+                            buttonIconSize: 13,
+                            buttonBorderRadiusSize: 6,
+                          ),
+                          Text(
+                            widget.playListName,
+                            textAlign: TextAlign.start,
                             overflow: TextOverflow.ellipsis,
                             style: GoogleFonts.alatsi(
                               color: Colors.white,
-                              // letterSpacing: 1,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 13,
+                              //  letterSpacing: 1,
+                              fontWeight: FontWeight.normal,
+                              fontSize: 15,
                             ),
                           ),
-                        ),
-                        // Artist name
-                        Text(
-                          widget.selectedAudio!.artistName,
-                          textAlign: TextAlign.start,
-                          overflow: TextOverflow.fade,
-                          style: GoogleFonts.alatsi(
-                            color: Colors.white,
-                            //letterSpacing: 1,
-                            fontWeight: FontWeight.normal,
-                            fontSize: 10,
+                          AudioButtons(
+                            onButtonPressed: () =>
+                                widget.onAudioTrayCloseFuntion(),
+                            buttonIcon: Bootstrap.x_lg,
+                            buttonWidth: 25,
+                            buttonHeight: 25,
+                            buttonIconSize: 13,
+                            buttonBorderRadiusSize: 6,
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                    Builder(builder: (newContext) {
-                      return AudioButtons(
-                        onButtonPressed: () => _onCreatePopUpWindow(
-                            context, widget.selectedAudio!),
-                        buttonIcon: Bootstrap.three_dots_vertical,
-                        buttonWidth: 25,
-                        buttonHeight: 25,
-                        buttonIconSize: 17,
-                        buttonBorderRadiusSize: 8,
-                      );
-                    }),
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 5),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                    color: widget.selectedAudio != null &&
+                                            widget.selectedAudio!.imageByteArray
+                                                .isNotEmpty &&
+                                            widget.selectedAudio!.songPath
+                                                .endsWith(".mp4")
+                                        ? Colors.black.withOpacity(0.5)
+                                        : Colors.white,
+                                    borderRadius: BorderRadius.circular(15)),
+                                child: widget.selectedAudio != null &&
+                                        widget.selectedAudio!.imageByteArray
+                                            .isNotEmpty &&
+                                        widget.selectedAudio!.songPath
+                                            .endsWith(".mp3")
+                                    ? ClipRRect(
+                                        borderRadius: BorderRadius.circular(15),
+                                        child: Image.memory(
+                                          widget.selectedAudio!.imageByteArray,
+                                          fit: BoxFit.fill,
+                                          isAntiAlias: true,
+                                          filterQuality: FilterQuality.high,
+                                        ),
+                                      )
+                                    : widget.selectedAudio != null &&
+                                            widget.selectedAudio!.songPath
+                                                .endsWith(".mp4")
+                                        ? AspectRatio(
+                                            aspectRatio: audioStreamInstance
+                                                .getVideoPlayer
+                                                .value
+                                                .aspectRatio,
+                                            child: VideoPlayer(
+                                                audioStreamInstance
+                                                    .getVideoPlayer))
+                                        : Container(
+                                            child: Icon(
+                                              Bootstrap.music_note_beamed,
+                                              size: 100,
+                                            ),
+                                          ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Song name
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 10, horizontal: 5),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          AudioButtons(
+                            onButtonPressed: () =>
+                                _addOrRemoveSongFromFavourite(
+                                    widget.selectedAudio!.songTitle),
+                            buttonIcon: widget.selectedAudio!.songIsMyFavourite
+                                ? Bootstrap.heart_fill
+                                : Bootstrap.heart,
+                            buttonWidth: 27,
+                            buttonHeight: 27,
+                            buttonIconSize: 20,
+                            buttonBorderRadiusSize: 8,
+                          ),
+                          Expanded(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text(
+                                  widget.selectedAudio!.songTitle,
+                                  textAlign: TextAlign.center,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.alatsi(
+                                    color: Colors.white,
+                                    // letterSpacing: 1,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                  ),
+                                ),
+
+                                // Artist name
+                                Text(
+                                  widget.selectedAudio!.artistName,
+                                  textAlign: TextAlign.start,
+                                  overflow: TextOverflow.fade,
+                                  style: GoogleFonts.alatsi(
+                                    color: Colors.white,
+                                    //letterSpacing: 1,
+                                    fontWeight: FontWeight.normal,
+                                    fontSize: 10,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Builder(builder: (newContext) {
+                            return AudioButtons(
+                              onButtonPressed: () => _onCreatePopUpWindow(
+                                  context, widget.selectedAudio!),
+                              buttonIcon: Bootstrap.three_dots_vertical,
+                              buttonWidth: 25,
+                              buttonHeight: 25,
+                              buttonIconSize: 17,
+                              buttonBorderRadiusSize: 8,
+                            );
+                          }),
+                        ],
+                      ),
+                    ),
+                    // Progress bar
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      child: ProgressBar(
+                        progress: audioStreamInstance.getCurrentDuration(),
+                        total: audioStreamInstance.getsongTotalDuration,
+                        barCapShape: BarCapShape.round,
+                        progressBarColor: Colors.white,
+                        baseBarColor: Colors.white.withOpacity(0.24),
+                        bufferedBarColor: Colors.white.withOpacity(0.24),
+                        thumbColor: Colors.white,
+                        barHeight: 4,
+                        thumbGlowRadius: 0,
+                        thumbRadius: 4,
+                        timeLabelLocation: TimeLabelLocation.sides,
+                        timeLabelTextStyle: GoogleFonts.alatsi(
+                          color: Colors.white,
+                          letterSpacing: 2,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 9,
+                        ),
+                        onSeek: (duration) {
+                          audioStreamInstance.seek(duration);
+                        },
+                      ),
+                    ),
+                    // Control buttons (shuffle, skip back, play/pause, skip forward, volume)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 5, horizontal: 5),
+                      child: Container(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            AudioButtons(
+                                onButtonPressed: () => _shuffleSongsList(),
+                                buttonIcon: Bootstrap.shuffle,
+                                buttonWidth: 30,
+                                buttonHeight: 30,
+                                buttonIconSize: 18,
+                                buttonBorderRadiusSize: 8),
+                            Container(
+                              width: 150,
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  AudioButtons(
+                                      onButtonPressed: () =>
+                                          _playPreviousSong(),
+                                      buttonIcon: Bootstrap.skip_backward_fill,
+                                      buttonWidth: 30,
+                                      buttonHeight: 30,
+                                      buttonIconSize: 18,
+                                      buttonBorderRadiusSize: 8),
+                                  AudioButtons(
+                                      onButtonPressed: () =>
+                                          _songPlayAndPause(),
+                                      buttonIcon:
+                                          audioStreamInstance.getPlayerState ==
+                                                      PlayerState.playing ||
+                                                  (audioStreamInstance
+                                                              .videoPlayer !=
+                                                          null &&
+                                                      audioStreamInstance
+                                                          .videoPlayer!
+                                                          .value
+                                                          .isPlaying)
+                                              ? Bootstrap.pause_circle_fill
+                                              : Bootstrap.play_circle_fill,
+                                      buttonWidth: 40,
+                                      buttonHeight: 40,
+                                      buttonIconSize: 30,
+                                      buttonBorderRadiusSize: 10),
+                                  AudioButtons(
+                                      onButtonPressed: () => _playNextSong(),
+                                      buttonIcon: Bootstrap.skip_forward_fill,
+                                      buttonWidth: 30,
+                                      buttonHeight: 30,
+                                      buttonIconSize: 18,
+                                      buttonBorderRadiusSize: 8),
+                                ],
+                              ),
+                            ),
+                            // Expand/Collapse button
+
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    Builder(builder: (context) {
+                                      return AudioButtons(
+                                          onButtonPressed: () =>
+                                              _changeVolume(context),
+                                          buttonIcon: Bootstrap.volume_up,
+                                          buttonWidth: 30,
+                                          buttonHeight: 30,
+                                          buttonIconSize: 18,
+                                          buttonBorderRadiusSize: 8);
+                                    }),
+                                    Text(
+                                      "${((audioStreamInstance.getVolume * 100).toInt()).toString()}",
+                                      textAlign: TextAlign.start,
+                                      overflow: TextOverflow.fade,
+                                      style: GoogleFonts.alatsi(
+                                        color: Colors.white,
+                                        //letterSpacing: 1,
+                                        fontWeight: FontWeight.normal,
+                                        fontSize: 10,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 15),
+                                  child: AudioButtons(
+                                    onButtonPressed: () {
+                                      setState(() {
+                                        audioTrayPlayListIsExpanded =
+                                            !audioTrayPlayListIsExpanded;
+                                      });
+                                      debugPrint("tray is expanded");
+                                    },
+                                    buttonIcon: audioTrayPlayListIsExpanded
+                                        ? Bootstrap.arrows_angle_expand
+                                        : Bootstrap.arrows_angle_contract,
+                                    buttonWidth: 35,
+                                    buttonHeight: 25,
+                                    buttonIconSize: 13,
+                                    buttonBorderRadiusSize: 10,
+                                  ),
+                                ),
+                                // Playlist (visible when expanded)
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
-              // Progress bar
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 5),
-                child: ProgressBar(
-                  progress: audioStreamInstance.getCurrentDuration(),
-                  total: audioStreamInstance.getsongTotalDuration,
-                  barCapShape: BarCapShape.round,
-                  progressBarColor: Colors.white,
-                  baseBarColor: Colors.white.withOpacity(0.24),
-                  bufferedBarColor: Colors.white.withOpacity(0.24),
-                  thumbColor: Colors.white,
-                  barHeight: 4,
-                  thumbGlowRadius: 0,
-                  thumbRadius: 4,
-                  timeLabelLocation: TimeLabelLocation.sides,
-                  timeLabelTextStyle: GoogleFonts.alatsi(
-                    color: Colors.white,
-                    letterSpacing: 2,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 9,
-                  ),
-                  onSeek: (duration) {
-                    audioStreamInstance.seek(duration);
-                  },
-                ),
-              ),
-              // Control buttons (shuffle, skip back, play/pause, skip forward, volume)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
-                child: Container(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      AudioButtons(
-                          onButtonPressed: () => _shuffleSongsList(),
-                          buttonIcon: Bootstrap.shuffle,
-                          buttonWidth: 30,
-                          buttonHeight: 30,
-                          buttonIconSize: 18,
-                          buttonBorderRadiusSize: 8),
-                      AudioButtons(
-                          onButtonPressed: () => _playPreviousSong(),
-                          buttonIcon: Bootstrap.skip_backward_fill,
-                          buttonWidth: 30,
-                          buttonHeight: 30,
-                          buttonIconSize: 18,
-                          buttonBorderRadiusSize: 8),
-                      AudioButtons(
-                          onButtonPressed: () =>
-                              _songPalyAndPause(widget.selectedAudio!),
-                          buttonIcon: audioStreamInstance.getPlayerState ==
-                                      PlayerState.playing ||
-                                  (audioStreamInstance.videoPlayer != null &&
-                                      audioStreamInstance
-                                          .videoPlayer!.value.isPlaying)
-                              ? Bootstrap.pause_circle_fill
-                              : Bootstrap.play_circle_fill,
-                          buttonWidth: 40,
-                          buttonHeight: 40,
-                          buttonIconSize: 30,
-                          buttonBorderRadiusSize: 10),
-                      AudioButtons(
-                          onButtonPressed: () => _playNextSong(),
-                          buttonIcon: Bootstrap.skip_forward_fill,
-                          buttonWidth: 30,
-                          buttonHeight: 30,
-                          buttonIconSize: 18,
-                          buttonBorderRadiusSize: 8),
-                      Builder(builder: (context) {
-                        return AudioButtons(
-                            onButtonPressed: () => _changeVolume(context),
-                            buttonIcon: Bootstrap.volume_up,
-                            buttonWidth: 30,
-                            buttonHeight: 30,
-                            buttonIconSize: 18,
-                            buttonBorderRadiusSize: 8);
-                      }),
-                    ],
-                  ),
-                ),
-              ),
-              // Expand/Collapse button
-              AudioButtons(
-                onButtonPressed: () {
-                  setState(() {
-                    audioTrayPlayListIsExpanded = !audioTrayPlayListIsExpanded;
-                  });
-                  debugPrint("tray is expanded");
-                },
-                buttonIcon: audioTrayPlayListIsExpanded
-                    ? Bootstrap.arrows_angle_expand
-                    : Bootstrap.arrows_angle_contract,
-                buttonWidth: 35,
-                buttonHeight: 25,
-                buttonIconSize: 13,
-                buttonBorderRadiusSize: 10,
-              ),
-              // Playlist (visible when expanded)
-              audioTrayPlayListIsExpanded
-                  ? Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.only(
-                            left: 5, right: 5, top: 2, bottom: 2),
+            ),
+            audioTrayPlayListIsExpanded
+                ? Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(
+                          left: 0, right: 5, top: 10, bottom: 10),
+                      child: FadeInRight(
+                        animate: true,
+                        duration: Duration(milliseconds: 100),
                         child: Container(
                           decoration: BoxDecoration(
                               color: Colors.white.withOpacity(0.09),
@@ -375,8 +435,11 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
                                       _playSlectedSong(widget.songsData[index]),
                                   style: ButtonStyle(
                                       padding: WidgetStateProperty.all(
-                                          EdgeInsets.symmetric(
-                                              vertical: 5, horizontal: 5)),
+                                          EdgeInsets.only(
+                                              top: 5,
+                                              bottom: 5,
+                                              left: 5,
+                                              right: 20)),
                                       elevation: WidgetStateProperty.all(0),
                                       shape: WidgetStateProperty.all<
                                           RoundedRectangleBorder>(
@@ -385,21 +448,15 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
                                               8), // Rounded corners.
                                         ),
                                       ),
-                                      backgroundColor: audioStreamInstance.selectedSong ==
-                                                  widget.songsData[index] &&
-                                              (audioStreamInstance.getPlayerState ==
-                                                      PlayerState.playing ||
-                                                  (audioStreamInstance.videoPlayer != null &&
-                                                      audioStreamInstance
-                                                          .videoPlayer!
-                                                          .value
-                                                          .isPlaying))
+                                      backgroundColor: audioStreamInstance
+                                                  .selectedSong ==
+                                              widget.songsData[index]
                                           ? WidgetStateProperty.all(
                                               Colors.white.withOpacity(0.4))
                                           : WidgetStateProperty.all(
                                               Colors.white.withOpacity(0.06)),
-                                      overlayColor:
-                                          WidgetStateProperty.all(Colors.white.withOpacity(0.05))),
+                                      overlayColor: WidgetStateProperty.all(
+                                          Colors.white.withOpacity(0.05))),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.start,
                                     crossAxisAlignment:
@@ -420,8 +477,8 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
                                                   borderRadius:
                                                       BorderRadius.circular(3),
                                                   child: Image.memory(
-                                                    width: 35,
-                                                    height: 35,
+                                                    width: 50,
+                                                    height: 50,
                                                     widget.songsData[index]
                                                         .imageByteArray,
                                                     fit: BoxFit.cover,
@@ -432,23 +489,24 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
                                                       const EdgeInsets.all(8),
                                                   child: Icon(
                                                     Bootstrap.music_note_beamed,
-                                                    size: 20,
+                                                    size: 35,
                                                     color: Colors.black,
                                                   ),
                                                 ),
                                         ),
                                       ),
-                                      Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 5, vertical: 2),
-                                            child: Container(
-                                              width: 155,
+                                      Expanded(
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 5,
+                                                      vertical: 2),
                                               child: Text(
                                                 widget
                                                     .songsData[index].songTitle,
@@ -463,12 +521,10 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
                                                 ),
                                               ),
                                             ),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 5),
-                                            child: Container(
-                                              width: 155,
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 5),
                                               child: Text(
                                                 widget.songsData[index]
                                                     .artistName,
@@ -482,8 +538,8 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
                                                 ),
                                               ),
                                             ),
-                                          ),
-                                        ],
+                                          ],
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -493,10 +549,10 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
                           ),
                         ),
                       ),
-                    )
-                  : Container(),
-            ],
-          ),
+                    ),
+                  )
+                : Container(),
+          ],
         ),
       ),
     );
@@ -537,7 +593,7 @@ class _AudioTrayLargeState extends State<AudioTrayLarge> {
     context.read<AudiostreamFunctions>().playMusic();
   }
 
-  void _songPalyAndPause(SongDataClass selectedSong) {
+  void _songPlayAndPause() {
     context.read<AudiostreamFunctions>().songPlayPause();
   }
 

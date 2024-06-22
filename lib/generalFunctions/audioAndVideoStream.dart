@@ -210,7 +210,7 @@ class AudiostreamFunctions extends ChangeNotifier {
 
   // Get the current duration of the song or video
   Duration getCurrentDuration() {
-    if (selectedSong!.songPath.endsWith(".mp4")) {
+    if (selectedSong != null && selectedSong!.songPath.endsWith(".mp4")) {
       return videoPlayer!.value.position;
     } else {
       return songCurrentDuration;

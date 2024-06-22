@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:icons_plus/icons_plus.dart';
+import 'package:my_music_app/mainScreenWithNavigation/moviesScreen.dart';
 import 'package:my_music_app/mainScreenWithNavigation/navigationBar/popUpWindow.dart';
 import 'package:provider/provider.dart';
+import '../../generalFunctions/audioAndVideoStream.dart';
 import '../../generalFunctions/navigationBarChange.dart';
 import '../../isarDatabase/databaseHelper/isarDatabaseHelper.dart';
 import '../../isarDatabase/databaseHelper/playlist.dart';
@@ -35,6 +37,7 @@ class _NavigationBarHolderState extends State<NavigationBarHolder> {
         Provider.of<NavigationBarChange>(context);
     List<PlayListClass> playListDataList =
         dataBaseHelperContext.playListDataList;
+    final audioStreamInstance = Provider.of<AudiostreamFunctions>(context);
 
     return Container(
         width: 180,
@@ -173,7 +176,7 @@ class _NavigationBarHolderState extends State<NavigationBarHolder> {
               ),
               // Playlists List
 
-              Flexible(
+              Expanded(
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: 10),
                   child: ListView.builder(
@@ -224,6 +227,29 @@ class _NavigationBarHolderState extends State<NavigationBarHolder> {
                   ),
                 ),
               ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                child: Tooltip(
+                  message: "Go to Movies",
+                  child: AudioButtons(
+                    onButtonPressed: () {
+                      if (audioStreamInstance.videoPlayer != null) {
+                        audioStreamInstance.pauseVideo();
+                      }
+                      audioStreamInstance.audioPlayer.stop();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => MoviesScreen()),
+                      );
+                    },
+                    buttonIcon: Bootstrap.play_btn,
+                    buttonWidth: 60,
+                    buttonHeight: 55,
+                    buttonIconSize: 50,
+                    buttonBorderRadiusSize: 10,
+                  ),
+                ),
+              )
             ]));
   }
 

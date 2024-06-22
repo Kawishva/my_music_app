@@ -58,21 +58,13 @@ class _PlayListsScreensState extends State<PlayListsScreens> {
         break;
     }
 
-    /* if (navigationBarChangeInstance.navigationBarIndex == 0) {
-      widget.songsData = songDataList;
-    } else if (navigationBarChangeInstance.navigationBarIndex == 1) {
-      widget.songsData = favouriteSongDataList;
-    } else if (navigationBarChangeInstance.navigationBarIndex == 2) {
-      widget.songsData = selectedPlayListSongsDataList;
-    } */
-
     return Container(
       child: GridView.builder(
         primary: false,
-        padding: EdgeInsets.all(3), // Padding around the grid
+        padding: EdgeInsets.all(10), // Padding around the grid
         itemCount: widget.songsData.length, // Number of items in the grid
         gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-          maxCrossAxisExtent: 155, // Max width of each item
+          maxCrossAxisExtent: 180, // Max width of each item
           crossAxisSpacing: 0, // Spacing between columns
           mainAxisSpacing: 0, // Spacing between rows
         ),
@@ -93,9 +85,9 @@ class _PlayListsScreensState extends State<PlayListsScreens> {
                       borderRadius: BorderRadius.circular(10),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.white.withOpacity(0.5),
+                          color: Colors.white.withOpacity(0.4),
                           spreadRadius: 3,
-                          blurRadius: 8,
+                          blurRadius: 7,
                           offset:
                               const Offset(0, 0), // Changes position of shadow
                         )
@@ -120,39 +112,50 @@ class _PlayListsScreensState extends State<PlayListsScreens> {
                                 Bootstrap.music_note_beamed,
                                 size: 60,
                               ),
-                        SizedBox(
-                          width: 60,
-                          height: 60,
-                          child: IconButton(
-                            onPressed: () =>
-                                _songPlayAndPause(widget.songsData[index]),
-                            icon: Icon(
-                              audioStreamInstance.selectedSong ==
-                                          widget.songsData[index] &&
-                                      (audioStreamInstance.getPlayerState ==
-                                              PlayerState.playing ||
-                                          (audioStreamInstance.videoPlayer !=
-                                                  null &&
-                                              audioStreamInstance.videoPlayer!
-                                                  .value.isPlaying))
-                                  ? Bootstrap.pause_circle_fill
-                                  : Bootstrap.play_circle_fill,
-                              size: 60,
-                              color: widget.songsData[index].songIsPlaying
-                                  ? Colors.black.withOpacity(0.8)
-                                  : Colors.black.withOpacity(0.3),
-                            ),
-                            style: ButtonStyle(
-                              backgroundColor:
-                                  WidgetStateProperty.all(Colors.transparent),
-                              overlayColor: WidgetStateProperty.all(
-                                  Colors.black.withOpacity(0.3)),
-                              padding: WidgetStateProperty.all(EdgeInsets.zero),
-                              shape: WidgetStateProperty.all<
-                                  RoundedRectangleBorder>(
-                                RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(
-                                      50), // Rounded corners.
+                        Align(
+                          alignment: AlignmentDirectional(0.9, 0.95),
+                          child: SizedBox(
+                            width: 25,
+                            height: 25,
+                            child: IconButton(
+                              onPressed: () =>
+                                  _songPlayAndPause(widget.songsData[index]),
+                              icon: Icon(
+                                shadows: [
+                                  BoxShadow(
+                                    color: Colors.white.withOpacity(1),
+                                    spreadRadius: 2,
+                                    blurRadius: 5,
+                                    offset: const Offset(
+                                        0, 0), // Changes position of shadow
+                                  )
+                                ],
+                                audioStreamInstance.selectedSong ==
+                                            widget.songsData[index] &&
+                                        (audioStreamInstance.getPlayerState ==
+                                                PlayerState.playing ||
+                                            (audioStreamInstance.videoPlayer !=
+                                                    null &&
+                                                audioStreamInstance.videoPlayer!
+                                                    .value.isPlaying))
+                                    ? Bootstrap.pause_circle_fill
+                                    : Bootstrap.play_circle_fill,
+                                size: 25,
+                                color: Colors.black,
+                              ),
+                              style: ButtonStyle(
+                                backgroundColor:
+                                    WidgetStateProperty.all(Colors.transparent),
+                                overlayColor: WidgetStateProperty.all(
+                                    Colors.black.withOpacity(0.3)),
+                                padding:
+                                    WidgetStateProperty.all(EdgeInsets.zero),
+                                shape: WidgetStateProperty.all<
+                                    RoundedRectangleBorder>(
+                                  RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                        50), // Rounded corners.
+                                  ),
                                 ),
                               ),
                             ),
@@ -190,11 +193,34 @@ class _PlayListsScreensState extends State<PlayListsScreens> {
                                           Colors.transparent),
                                     ),
                                     icon: Icon(
+                                      shadows: [
+                                        widget.songsData[index]
+                                                .songIsMyFavourite
+                                            ? BoxShadow(
+                                                color:
+                                                    Colors.red.withOpacity(1),
+                                                spreadRadius: 5,
+                                                blurRadius: 10,
+                                                offset: const Offset(0,
+                                                    0), // Changes position of shadow
+                                              )
+                                            : BoxShadow(
+                                                color:
+                                                    Colors.black.withOpacity(1),
+                                                spreadRadius: 2,
+                                                blurRadius: 4,
+                                                offset: const Offset(0,
+                                                    0), // Changes position of shadow
+                                              )
+                                      ],
                                       widget.songsData[index].songIsMyFavourite
                                           ? Bootstrap.heart_fill
                                           : Bootstrap.heart,
-                                      size: 23,
-                                      color: Colors.black,
+                                      size: 20,
+                                      color: widget.songsData[index]
+                                              .songIsMyFavourite
+                                          ? Colors.red
+                                          : Colors.white,
                                     ),
                                   ),
                                 ),
@@ -216,16 +242,20 @@ class _PlayListsScreensState extends State<PlayListsScreens> {
                                                 5), // Rounded corners.
                                           ),
                                         ),
-                                        backgroundColor:
-                                            WidgetStateProperty.all(
-                                                Colors.white.withOpacity(0.1)),
-                                        overlayColor: WidgetStateProperty.all(
-                                            Colors.black.withOpacity(0.05)),
                                       ),
                                       icon: Icon(
+                                        shadows: [
+                                          BoxShadow(
+                                            color: Colors.black,
+                                            spreadRadius: 1,
+                                            blurRadius: 0.5,
+                                            offset: const Offset(0,
+                                                0), // Changes position of shadow
+                                          )
+                                        ],
                                         Bootstrap.three_dots_vertical,
                                         size: 17,
-                                        color: Colors.black,
+                                        color: Colors.white,
                                       ),
                                     ),
                                   );

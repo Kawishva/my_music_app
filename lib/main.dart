@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_music_app/generalFunctions/moviesFunction.dart';
 import 'package:my_music_app/isarDatabase/databaseHelper/isarDatabaseHelper.dart';
 import 'package:my_music_app/splash_screen.dart';
 import 'package:provider/provider.dart';
@@ -44,6 +45,7 @@ Future<void> main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => DataBaseHelper()),
+        ChangeNotifierProvider(create: (context) => MoviesFunction()),
         ChangeNotifierProvider(create: (context) => NavigationBarChange()),
         ChangeNotifierProvider(create: (context) => AudiostreamFunctions()),
       ],
